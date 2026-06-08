@@ -225,7 +225,7 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 8.8rem;
+  min-height: 7rem;
   padding: 0.45rem;
   overflow: hidden;
   border-radius: 0.45rem;
@@ -236,7 +236,7 @@ html {
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: 12.5rem;
+  max-height: 9rem;
   margin: 0 auto;
   object-fit: contain;
   object-position: center;
@@ -477,6 +477,10 @@ html {
   .publication-card__media img {
     min-height: 0;
     max-height: none;
+  }
+
+  .publication-card__media {
+    min-height: 6.4rem;
   }
 
   .publication-card__body {
