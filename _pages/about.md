@@ -1,7 +1,7 @@
 ---
 permalink: /
 title: ""
-excerpt: "Jianxiong Shen — Research Scientist in computer vision, 3D representations, and multimodal post-training."
+excerpt: "Jianxiong Shen"
 author_profile: true
 redirect_from:
   - /about/
@@ -9,12 +9,12 @@ redirect_from:
 ---
 
 <div class="home-intro">
-  <p class="home-kicker">Computer Vision · 3D Representation · Multimodal RL</p>
+  <p class="home-kicker">Computer Vision · 3D Representation · Reinforcement Learning</p>
   <h1>Jianxiong Shen</h1>
   <p class="home-lead">
     I am a Research Scientist at Tencent in Shenzhen. My work spans
-    <strong>3D scene representation</strong>, <strong>uncertainty-aware vision</strong>,
-    and <strong>post-training for multimodal generative models</strong>.
+    <strong>3D scene representation</strong>, <strong>uncertainty-aware vision</strong>, <strong>Game Agents</strong>
+    and <strong>RL for multimodal models</strong>.
   </p>
   <p>
     I received my Ph.D. from the
@@ -31,30 +31,6 @@ redirect_from:
     <a class="home-button" href="https://github.com/poetrywanderer">GitHub</a>
   </div>
 </div>
-
-<section class="home-section" id="research">
-  <div class="section-heading">
-    <span>Research</span>
-    <h2>What I work on</h2>
-  </div>
-  <div class="research-grid">
-    <article class="research-card">
-      <span class="research-card__index">01</span>
-      <h3>3D Representations</h3>
-      <p>Efficient and structured neural scene representations, from uncertainty-aware NeRFs to scalable 3D Gaussian Splatting.</p>
-    </article>
-    <article class="research-card">
-      <span class="research-card__index">02</span>
-      <h3>Reliable Vision</h3>
-      <p>Understanding what a 3D model knows, where it is uncertain, and how confidence can support robust downstream decisions.</p>
-    </article>
-    <article class="research-card">
-      <span class="research-card__index">03</span>
-      <h3>Multimodal Post-Training</h3>
-      <p>RL and distillation across language, vision-language, diffusion, and interactive agents, with an emphasis on diagnostic experiments.</p>
-    </article>
-  </div>
-</section>
 
 <section class="home-section" id="publications">
   <div class="section-heading">
