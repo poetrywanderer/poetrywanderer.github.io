@@ -132,7 +132,7 @@ redirect_from:
         <span class="project-card__tag">Diffusion Models</span>
         <h3>Reward Hacking or Forgetting?</h3>
         <p>Studied scene collapse under verifiable OCR reward fine-tuning, separating the observed failure from simple catastrophic-forgetting explanations.</p>
-        <a href="https://github.com/poetrywanderer/RL-Projects/Diffusion-Flow-RL">View project <span aria-hidden="true">→</span></a>
+        <a href="https://github.com/poetrywanderer/RL-Projects/Diffusion-Flow-RL">Project page <span aria-hidden="true">→</span></a>
         <a href="https://github.com/poetrywanderer/RL-Projects/Diffusion-Flow-RL/assets/main.pdf">View paper <span aria-hidden="true">→</span></a>
       </div>
     </article>
