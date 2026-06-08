@@ -365,6 +365,17 @@ html {
   text-decoration: none;
 }
 
+.project-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.project-card__links a {
+  margin-top: 0;
+}
+
 .timeline {
   border-top: 1px solid var(--home-line);
 }

@@ -110,8 +110,8 @@ redirect_from:
 <section class="home-section" id="projects">
   <div class="section-heading">
     <span>Projects</span>
-    <h2>Recent research explorations</h2>
-    <p>Independent, experiment-driven studies of post-training across model families. These are research projects rather than peer-reviewed publications.</p>
+    <h2>Recent research</h2>
+    <p>Experiment-driven studies of RL post-training across model families. These are research projects rather than peer-reviewed publications.</p>
   </div>
 
   <div class="project-grid">
@@ -121,7 +121,10 @@ redirect_from:
         <span class="project-card__tag">Vision-Language Models</span>
         <h3>On-Policy Distillation + GRPO for Geometric Reasoning</h3>
         <p>Compared sparse sequence rewards with dense teacher feedback on Qwen2.5-VL-7B, then combined both stages to improve Geometry3K accuracy from 37.8% to 54.2%.</p>
-        <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Geo3K-VL-OPD">View project <span aria-hidden="true">→</span></a>
+        <div class="project-card__links">
+          <a href="/RL-Projects/Geo3K-VL-OPD/assets/paper.pdf">View paper <span aria-hidden="true">→</span></a>
+          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Geo3K-VL-OPD">Project page <span aria-hidden="true">→</span></a>
+        </div>
       </div>
     </article>
 
