@@ -121,10 +121,8 @@ redirect_from:
         <span class="project-card__tag">Vision-Language Models</span>
         <h3>On-Policy Distillation + GRPO for Geometric Reasoning</h3>
         <p>Compared sparse sequence rewards with dense teacher feedback on Qwen2.5-VL-7B, then combined both stages to improve Geometry3K accuracy from 37.8% to 54.2%.</p>
-        <div class="project-card__links">
-          <a href="https://github.com/poetrywanderer/RL-Projects/Geo3K-VL-OPD/assets/paper.pdf">View paper <span aria-hidden="true">→</span></a>
-          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Geo3K-VL-OPD">Project page <span aria-hidden="true">→</span></a>
-        </div>
+        <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Geo3K-VL-OPD">Project page <span aria-hidden="true">→</span></a>
+                <a href="https://github.com/poetrywanderer/RL-Projects/Geo3K-VL-OPD/assets/paper.pdf">View paper <span aria-hidden="true">→</span></a>
       </div>
     </article>
 
@@ -134,11 +132,8 @@ redirect_from:
         <span class="project-card__tag">Diffusion Models</span>
         <h3>Reward Hacking or Forgetting?</h3>
         <p>Studied scene collapse under verifiable OCR reward fine-tuning, separating the observed failure from simple catastrophic-forgetting explanations.</p>
-        <a href="https://github.com/poetrywanderer/Diffusion-RL">View project <span aria-hidden="true">→</span></a>
-        <div class="project-card__links">
-          <a href="https://github.com/poetrywanderer/RL-Projects/Diffusion-Flow-RL/assets/main.pdf">View paper <span aria-hidden="true">→</span></a>
-          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Diffusion-Flow-RL">Project page <span aria-hidden="true">→</span></a>
-        </div>
+        <a href="https://github.com/poetrywanderer/RL-Projects/Diffusion-Flow-RL">View project <span aria-hidden="true">→</span></a>
+        <a href="https://github.com/poetrywanderer/RL-Projects/Diffusion-Flow-RL/assets/main.pdf">View paper <span aria-hidden="true">→</span></a>
       </div>
     </article>
 
