@@ -10,7 +10,7 @@ locale                   : "en-US"
 title                    : "Jianxiong Shen"
 title_separator          : "-"
 name                     : &name "Jianxiong Shen"
-description              : &description "Ph.D. Student at IRI"
+description              : &description "Research Scientist working on computer vision, 3D representations, and multimodal post-training."
 url                      : https://poetrywanderer.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : "poetrywanderer.github.io"
@@ -81,10 +81,10 @@ analytics:
 # Site Author
 author:
   name             : "Jianxiong Shen"
-  avatar           : "../images/profile.jpg"
-  bio              : "Ph.D. Student at IRI"
-  location         : "Barcelona, Spain"
-  employer         :
+  avatar           : "/images/profile.jpg"
+  bio              : "Research Scientist · 3D Vision & Multimodal Learning"
+  location         : "Shenzhen, China"
+  employer         : "Tencent"
   pubmed           :
   googlescholar    : "https://scholar.google.com/citations?hl=en&user=2L7sQVQAAAAJ"
   email            : 'jshen@iri.upc.edu'
