@@ -233,9 +233,11 @@ html {
 }
 
 .publication-card__media img {
-  width: 100%;
+  width: auto;
   height: auto;
+  max-width: 100%;
   max-height: 12.5rem;
+  margin: 0 auto;
   object-fit: contain;
   object-position: center;
 }
@@ -315,10 +317,12 @@ html {
 }
 
 .project-card > img {
-  width: 100%;
+  width: auto;
   height: 9rem;
+  max-width: 100%;
   border-bottom: 1px solid var(--home-line);
   background: var(--home-soft);
+  margin: 0 auto;
   object-fit: contain;
   object-position: center center;
 }
@@ -481,6 +485,8 @@ html {
 
   .project-card > img {
     height: auto;
+    width: auto;
+    max-width: 100%;
     max-height: 12rem;
     min-height: 0;
     border-right: 0;
