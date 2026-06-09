@@ -66,8 +66,8 @@ redirect_from:
         <p class="publication-card__authors"><strong>Short note</strong> on reward-conditioned scene collapse</p>
         <p>Studied scene collapse under verifiable OCR reward fine-tuning, separating the observed failure from simple catastrophic-forgetting explanations.</p>
         <div class="publication-card__links">
-          <a href="https://github.com/poetrywanderer/Diffusion-RL/blob/main/paper/main.pdf">Paper</a>
-          <a href="https://github.com/poetrywanderer/Diffusion-RL">Project</a>
+          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Diffusion-Flow-RL/assets/main.pdf">Paper</a>
+          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Diffusion-Flow-RL">Project</a>
         </div>
       </div>
     </article>
