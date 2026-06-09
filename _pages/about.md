@@ -32,6 +32,63 @@ redirect_from:
   </div>
 </div>
 
+<section class="home-section" id="projects">
+  <div class="section-heading">
+    <span>Projects</span>
+    <h2>Recent research</h2>
+    <p>Experiment-driven studies of RL post-training across LLMs, VLMs and Diffusion Models.</p>
+  </div>
+
+  <div class="publication-list">
+    <article class="publication-card">
+      <div class="publication-card__media">
+        <img src="/images/projects/multimodal-post-training.png" alt="Multimodal post-training experiment curves">
+      </div>
+      <div class="publication-card__body">
+        <div class="publication-card__meta"><span>Recent Research</span><span>Vision-Language Models</span></div>
+        <h3>On-Policy Distillation + GRPO for Geometric Reasoning</h3>
+        <p class="publication-card__authors"><strong>Project paper</strong> and reproducible training artifacts</p>
+        <p>Compared sparse sequence rewards with dense teacher feedback on Qwen2.5-VL-7B, then combined both stages to improve Geometry3K accuracy from 37.8% to 54.2%.</p>
+        <div class="publication-card__links">
+          <a href="https://arxiv.org/abs/2606.09059">Paper</a>
+          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Geo3K-VL-OPD">Project</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="publication-card">
+      <div class="publication-card__media">
+        <img src="/images/projects/diffusion-rl.png" alt="Diffusion RL OCR reward examples">
+      </div>
+      <div class="publication-card__body">
+        <div class="publication-card__meta"><span>Recent Research</span><span>Diffusion Models</span></div>
+        <h3>Reward Hacking or Forgetting?</h3>
+        <p class="publication-card__authors"><strong>Short note</strong> on reward-conditioned scene collapse</p>
+        <p>Studied scene collapse under verifiable OCR reward fine-tuning, separating the observed failure from simple catastrophic-forgetting explanations.</p>
+        <div class="publication-card__links">
+          <a href="https://github.com/poetrywanderer/Diffusion-RL/blob/main/paper/main.pdf">Paper</a>
+          <a href="https://github.com/poetrywanderer/Diffusion-RL">Project</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="publication-card">
+      <div class="publication-card__media">
+        <img src="/images/projects/text-rl.png" alt="Text reasoning RL training curves">
+      </div>
+      <div class="publication-card__body">
+        <div class="publication-card__meta"><span>Recent Research</span><span>Language Models</span></div>
+        <h3>R1-Zero Style Reasoning and Transfer</h3>
+        <p class="publication-card__authors"><strong>Project report</strong> on emergent reasoning and transfer</p>
+        <p>Reproduced emergent GRPO reasoning at 3B scale and measured where the learned search behavior transfers, including both positive and negative results.</p>
+        <div class="publication-card__links">
+          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/R1-RL">Project</a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
 <section class="home-section" id="publications">
   <div class="section-heading">
     <span>Publications</span>
@@ -102,63 +159,6 @@ redirect_from:
         <div class="publication-card__links">
           <a href="https://arxiv.org/abs/2109.02123">Paper</a>
           <a href="/files/3DV-Poster-159.pptx">Poster</a>
-        </div>
-      </div>
-    </article>
-  </div>
-</section>
-
-<section class="home-section" id="projects">
-  <div class="section-heading">
-    <span>Projects</span>
-    <h2>Recent research</h2>
-    <p>Experiment-driven studies of RL post-training across LLMs, VLMs and Diffusion Models.</p>
-  </div>
-
-  <div class="publication-list">
-    <article class="publication-card">
-      <div class="publication-card__media">
-        <img src="/images/projects/multimodal-post-training.png" alt="Multimodal post-training experiment curves">
-      </div>
-      <div class="publication-card__body">
-        <div class="publication-card__meta"><span>Recent Research</span><span>Vision-Language Models</span></div>
-        <h3>On-Policy Distillation + GRPO for Geometric Reasoning</h3>
-        <p class="publication-card__authors"><strong>Project paper</strong> and reproducible training artifacts</p>
-        <p>Compared sparse sequence rewards with dense teacher feedback on Qwen2.5-VL-7B, then combined both stages to improve Geometry3K accuracy from 37.8% to 54.2%.</p>
-        <div class="publication-card__links">
-          <a href="https://arxiv.org/abs/2606.09059">Paper</a>
-          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Geo3K-VL-OPD">Project</a>
-        </div>
-      </div>
-    </article>
-
-    <article class="publication-card">
-      <div class="publication-card__media">
-        <img src="/images/projects/diffusion-rl.png" alt="Diffusion RL OCR reward examples">
-      </div>
-      <div class="publication-card__body">
-        <div class="publication-card__meta"><span>Recent Research</span><span>Diffusion Models</span></div>
-        <h3>Reward Hacking or Forgetting?</h3>
-        <p class="publication-card__authors"><strong>Short note</strong> on reward-conditioned scene collapse</p>
-        <p>Studied scene collapse under verifiable OCR reward fine-tuning, separating the observed failure from simple catastrophic-forgetting explanations.</p>
-        <div class="publication-card__links">
-          <a href="https://github.com/poetrywanderer/Diffusion-RL/blob/main/paper/main.pdf">Paper</a>
-          <a href="https://github.com/poetrywanderer/Diffusion-RL">Project</a>
-        </div>
-      </div>
-    </article>
-
-    <article class="publication-card">
-      <div class="publication-card__media">
-        <img src="/images/projects/text-rl.png" alt="Text reasoning RL training curves">
-      </div>
-      <div class="publication-card__body">
-        <div class="publication-card__meta"><span>Recent Research</span><span>Language Models</span></div>
-        <h3>R1-Zero Style Reasoning and Transfer</h3>
-        <p class="publication-card__authors"><strong>Project report</strong> on emergent reasoning and transfer</p>
-        <p>Reproduced emergent GRPO reasoning at 3B scale and measured where the learned search behavior transfers, including both positive and negative results.</p>
-        <div class="publication-card__links">
-          <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/R1-RL">Project</a>
         </div>
       </div>
     </article>
