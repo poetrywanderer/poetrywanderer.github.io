@@ -9,12 +9,12 @@ redirect_from:
 ---
 
 <div class="home-intro">
-  <p class="home-kicker">Computer Vision · 3D Representation · Reinforcement Learning</p>
+  <p class="home-kicker">Computer Vision · Multi-Modal Generative AI · Reinforcement Learning</p>
   <h1>Jianxiong Shen</h1>
   <p class="home-lead">
-    I am a Research Scientist at Tencent in Shenzhen. My work spans
-    <strong>3D scene representation</strong>, <strong>uncertainty-aware vision</strong>, <strong>Game Agents</strong>
-    and <strong>RL for multimodal models</strong>.
+    I am currently a Research Scientist at Tencent in Shenzhen. My work spans
+    <strong>Game Agents</strong>, <strong>Multi-Modal Generative AI</strong>
+    and <strong>Reinforcement Learning</strong>.
   </p>
   <p>
     I received my Ph.D. from the
@@ -67,6 +67,7 @@ redirect_from:
         <p>Models spatial uncertainty beyond individual rendered views, producing a queryable 3D uncertainty field for neural scenes.</p>
         <div class="publication-card__links">
           <a href="https://arxiv.org/abs/2311.01815">Paper</a>
+          <a href="https://github.com/poetrywanderer/3D-Uncertainty-Field.git">Code</a>
         </div>
       </div>
     </article>
@@ -111,7 +112,7 @@ redirect_from:
   <div class="section-heading">
     <span>Projects</span>
     <h2>Recent research</h2>
-    <p>Experiment-driven studies of RL post-training across model families, presented in the same format as publications so the paper-facing outputs stay front and center.</p>
+    <p>Experiment-driven studies of RL post-training across LLMs, VLMs and Diffusion Models.</p>
   </div>
 
   <div class="publication-list">
@@ -125,7 +126,7 @@ redirect_from:
         <p class="publication-card__authors"><strong>Project paper</strong> and reproducible training artifacts</p>
         <p>Compared sparse sequence rewards with dense teacher feedback on Qwen2.5-VL-7B, then combined both stages to improve Geometry3K accuracy from 37.8% to 54.2%.</p>
         <div class="publication-card__links">
-          <a href="/RL-Projects/Geo3K-VL-OPD/assets/paper.pdf">Paper</a>
+          <a href="https://arxiv.org/abs/2606.09059">Paper</a>
           <a href="https://github.com/poetrywanderer/RL-Projects/tree/main/Geo3K-VL-OPD">Project</a>
         </div>
       </div>

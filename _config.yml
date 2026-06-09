@@ -82,12 +82,12 @@ analytics:
 author:
   name             : "Jianxiong Shen"
   avatar           : "profile.jpg"
-  bio              : "Research Scientist · 3D Vision & Multimodal Learning"
+  # bio              : "Research Scientist · 3D Vision & Multimodal Learning"
   location         : "Shenzhen, China"
   employer         : "Tencent"
   pubmed           :
   googlescholar    : "https://scholar.google.com/citations?hl=en&user=2L7sQVQAAAAJ"
-  email            : 'jshen@iri.upc.edu'
+  email            : 'poetrywanderer@gmail.com'
   researchgate     :  # example: "https://www.researchgate.net/profile/yourprofile"
   uri              :
   bitbucket        :
