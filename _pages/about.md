@@ -42,6 +42,22 @@ redirect_from:
   <div class="publication-list">
     <article class="publication-card">
       <div class="publication-card__media">
+        <img src="/images/projects/diffusion-rl.png" alt="Diffusion and agentic reinforcement learning">
+      </div>
+      <div class="publication-card__body">
+        <div class="publication-card__meta"><span>Technical Blog</span><span>Generative Agents</span></div>
+        <h3>From Flow-GRPO to Generative Agents</h3>
+        <p class="publication-card__authors"><strong>Research note</strong> on closed-loop visual generation</p>
+        <p>Connects Flow-GRPO and DiffusionNFT with MIRA and GenAgent, and proposes a compute-aware framework for comparing single-shot generator RL with interactive agentic RL.</p>
+        <div class="publication-card__links">
+          <a href="/blog/diffusion-agentic-rl/">Read</a>
+          <a href="https://github.com/poetrywanderer/Diffusion-AgenticRL">Project</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="publication-card">
+      <div class="publication-card__media">
         <img src="/images/projects/multimodal-post-training.png" alt="Multimodal post-training experiment curves">
       </div>
       <div class="publication-card__body">
@@ -201,6 +217,7 @@ redirect_from:
     <h2>Recent news</h2>
   </div>
   <div class="news-list">
+    <div class="news-item"><time>2026.06</time><p>Published a technical blog connecting Flow-GRPO, DiffusionNFT, and interactive generative agents.</p></div>
     <div class="news-item"><time>2026.06</time><p>Released a short empirical note on scene collapse under OCR-reward diffusion RL.</p></div>
     <div class="news-item"><time>2025.06</time><p><strong>LOD-GS</strong> was published at CVPR 2025.</p></div>
     <div class="news-item"><time>2024.08</time><p>Joined Tencent as a Research Scientist.</p></div>

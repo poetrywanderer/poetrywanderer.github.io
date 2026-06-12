@@ -1,0 +1,15 @@
+---
+layout: archive
+permalink: /blog/
+title: "Technical Blog"
+author_profile: true
+---
+
+{% include base_path %}
+
+<p>Notes on reinforcement learning, multimodal agents, and visual generation.</p>
+
+{% assign research_posts = site.categories["research-blog"] %}
+{% for post in research_posts %}
+  {% include archive-single.html %}
+{% endfor %}
