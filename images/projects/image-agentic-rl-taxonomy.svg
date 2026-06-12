@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef2ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#0f172a" flood-opacity=".12"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 34px Inter, Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 18px Inter, Arial, sans-serif; fill: #475569; }
+      .axis { font: 600 17px Inter, Arial, sans-serif; fill: #334155; }
+      .lane { font: 700 18px Inter, Arial, sans-serif; fill: #0f172a; }
+      .card-title { font: 700 18px Inter, Arial, sans-serif; fill: #0f172a; }
+      .card-text { font: 500 14px Inter, Arial, sans-serif; fill: #475569; }
+      .small { font: 600 13px Inter, Arial, sans-serif; fill: #64748b; }
+      .tag { font: 700 12px Inter, Arial, sans-serif; fill: white; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="900" fill="url(#bg)"/>
+  <text x="70" y="62" class="title">Image Agentic RL: policy actions and reward signals</text>
+  <text x="70" y="94" class="subtitle">A mechanism-oriented map of generation and editing agents, updated June 2026</text>
+
+  <line x1="265" y1="145" x2="1480" y2="145" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="270" y="130" class="axis">Training-free workflow</text>
+  <text x="640" y="130" class="axis">Component-level RL</text>
+  <text x="1120" y="130" class="axis">Closed-loop environment RL</text>
+
+  <g>
+    <text x="70" y="215" class="lane">Knowledge acquisition</text>
+    <line x1="260" y1="205" x2="1510" y2="205" stroke="#cbd5e1"/>
+    <rect x="1080" y="165" width="390" height="78" rx="16" fill="#fff7ed" stroke="#fb923c" filter="url(#shadow)"/>
+    <text x="1100" y="192" class="card-title">Search-grounded generation</text>
+    <text x="1100" y="216" class="card-text">search / image_search / browse → grounded prompt</text>
+    <rect x="1360" y="177" width="90" height="22" rx="11" fill="#f97316"/>
+    <text x="1375" y="193" class="tag">Gen-Searcher</text>
+  </g>
+
+  <g>
+    <text x="70" y="335" class="lane">Generator steering</text>
+    <line x1="260" y1="325" x2="1510" y2="325" stroke="#cbd5e1"/>
+    <rect x="300" y="275" width="260" height="92" rx="16" fill="#f8fafc" stroke="#94a3b8" filter="url(#shadow)"/>
+    <text x="320" y="304" class="card-title">Fixed / training-free loop</text>
+    <text x="320" y="329" class="card-text">rewrite, generate, score, retry</text>
+    <text x="320" y="350" class="small">CRAFT · T2I-Copilot · ImAgent</text>
+
+    <rect x="610" y="275" width="275" height="92" rx="16" fill="#eff6ff" stroke="#60a5fa" filter="url(#shadow)"/>
+    <text x="630" y="304" class="card-title">Outcome + pairwise process</text>
+    <text x="630" y="329" class="card-text">final success + consecutive improvement</text>
+    <rect x="776" y="337" width="88" height="22" rx="11" fill="#2563eb"/>
+    <text x="791" y="353" class="tag">GenAgent</text>
+
+    <rect x="1080" y="265" width="390" height="112" rx="16" fill="#ecfdf5" stroke="#34d399" filter="url(#shadow)"/>
+    <text x="1100" y="294" class="card-title">State-conditioned action policy</text>
+    <text x="1100" y="319" class="card-text">STOP / REFINE / REGENERATE</text>
+    <text x="1100" y="341" class="card-text">Peak + Retention - Turn Cost</text>
+    <rect x="1320" y="347" width="128" height="22" rx="11" fill="#059669"/>
+    <text x="1331" y="363" class="tag">Generation Navigator</text>
+  </g>
+
+  <g>
+    <text x="70" y="470" class="lane">Semantic editing</text>
+    <line x1="260" y1="460" x2="1510" y2="460" stroke="#cbd5e1"/>
+    <rect x="610" y="410" width="275" height="100" rx="16" fill="#f5f3ff" stroke="#8b5cf6" filter="url(#shadow)"/>
+    <text x="630" y="439" class="card-title">Decompose and sequence</text>
+    <text x="630" y="464" class="card-text">action / subject / goal rewards</text>
+    <text x="630" y="486" class="small">RL mainly trains decomposition</text>
+    <rect x="775" y="480" width="90" height="22" rx="11" fill="#7c3aed"/>
+    <text x="787" y="496" class="tag">ImageEdit-R1</text>
+
+    <rect x="1080" y="400" width="390" height="120" rx="16" fill="#fdf4ff" stroke="#d946ef" filter="url(#shadow)"/>
+    <text x="1100" y="429" class="card-title">Step-wise atomic editing</text>
+    <text x="1100" y="454" class="card-text">same-state candidate edits → EditScore</text>
+    <text x="1100" y="476" class="card-text">new image becomes the next observation</text>
+    <rect x="1385" y="486" width="62" height="22" rx="11" fill="#c026d3"/>
+    <text x="1401" y="502" class="tag">MIRA</text>
+  </g>
+
+  <g>
+    <text x="70" y="610" class="lane">Diagnosis and repair</text>
+    <line x1="260" y1="600" x2="1510" y2="600" stroke="#cbd5e1"/>
+    <rect x="610" y="548" width="275" height="105" rx="16" fill="#fff1f2" stroke="#fb7185" filter="url(#shadow)"/>
+    <text x="630" y="577" class="card-title">Localized retouching workflow</text>
+    <text x="630" y="602" class="card-text">saliency → diagnosis → inpainting</text>
+    <text x="630" y="624" class="small">RL aligns diagnosis, not full loop</text>
+    <rect x="749" y="620" width="116" height="22" rx="11" fill="#e11d48"/>
+    <text x="759" y="636" class="tag">Agentic Retoucher</text>
+
+    <rect x="1080" y="540" width="390" height="122" rx="16" fill="#fefce8" stroke="#eab308" filter="url(#shadow)"/>
+    <text x="1100" y="569" class="card-title">Reflection–plan co-optimization</text>
+    <text x="1100" y="594" class="card-text">direct plan reward; outcome-based reflection</text>
+    <text x="1100" y="616" class="card-text">decouple low-noise learning, then fuse</text>
+    <rect x="1326" y="626" width="122" height="22" rx="11" fill="#ca8a04"/>
+    <text x="1338" y="642" class="tag">VisionCreator-R1</text>
+  </g>
+
+  <g>
+    <text x="70" y="748" class="lane">Professional tools</text>
+    <line x1="260" y1="738" x2="1510" y2="738" stroke="#cbd5e1"/>
+    <rect x="580" y="688" width="315" height="105" rx="16" fill="#f0fdfa" stroke="#2dd4bf" filter="url(#shadow)"/>
+    <text x="600" y="717" class="card-title">Parameterized edit policy</text>
+    <text x="600" y="742" class="card-text">generalist subjective reward</text>
+    <text x="600" y="764" class="small">RetouchIQ</text>
+
+    <rect x="1080" y="680" width="390" height="122" rx="16" fill="#f0f9ff" stroke="#38bdf8" filter="url(#shadow)"/>
+    <text x="1100" y="709" class="card-title">Tool-marginal utility</text>
+    <text x="1100" y="734" class="card-text">remove one tool call and measure damage</text>
+    <text x="1100" y="756" class="card-text">16 interpretable global editing tools</text>
+    <rect x="1397" y="766" width="50" height="22" rx="11" fill="#0284c7"/>
+    <text x="1412" y="782" class="tag">IEA</text>
+  </g>
+
+  <rect x="70" y="830" width="1460" height="44" rx="12" fill="#0f172a"/>
+  <text x="92" y="858" style="font: 600 16px Inter, Arial, sans-serif; fill: #f8fafc;">
+    Remaining gap: constraint-level counterfactual credit under a fixed generation budget.
+  </text>
+</svg>
