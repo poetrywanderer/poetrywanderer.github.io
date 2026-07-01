@@ -10,7 +10,11 @@ tags:
   - Multimodal Agents
   - Large Language Models
   - Generative AI
+header:
+  teaser: "大模型在游戏中的应用英文.png"
 ---
+
+![Applications of Large Models in Games](/images/大模型在游戏中的应用英文.png)
 
 大模型正在从两个方向重塑游戏场景：一是进入已有游戏，成为理解、决策、陪伴和控制系统的一部分；二是参与游戏生成，从研发流程到玩家游玩过程中的动态内容生成。它们的价值并不只是“替代玩家玩游戏”，更重要的是把语言理解、视觉理解、长期记忆、内容生成和交互推理能力嵌入游戏生态。
 
