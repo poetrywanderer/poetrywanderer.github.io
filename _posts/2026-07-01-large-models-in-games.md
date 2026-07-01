@@ -1,8 +1,8 @@
 ---
-title: "大模型在游戏场景中的两条主线"
+title: "Applications of Large Models in Games"
 date: 2026-07-01
 permalink: /blog/large-models-in-games/
-excerpt: "大模型正在从理解游戏、参与游戏和生成游戏三个层面进入游戏生态，但最现实的形态不是端到端替代玩家，而是与传统引擎和低延迟策略模型组成混合系统。"
+excerpt: "Large models are moving into games as vision-action agents, hierarchical planners, companions, NPCs, production copilots, and dynamic content generators."
 categories:
   - research-blog
 tags:
@@ -16,39 +16,43 @@ header:
 
 ![Applications of Large Models in Games](/images/大模型在游戏中的应用英文.png)
 
-大模型正在从两个方向重塑游戏场景：一是进入已有游戏，成为理解、决策、陪伴和控制系统的一部分；二是参与游戏生成，从研发流程到玩家游玩过程中的动态内容生成。它们的价值并不只是“替代玩家玩游戏”，更重要的是把语言理解、视觉理解、长期记忆、内容生成和交互推理能力嵌入游戏生态。
+Large models are reshaping games along two broad directions. The first is integrating large models into existing games, enabling agents or characters to understand, decide, accompany, and act within game environments. The second is using large models to generate games, either during development or dynamically while players are playing. In short, the former focuses on how AI understands and participates in games, while the latter focuses on how AI helps create games.
 
-## 进入已有游戏：从操作到协作
+## Integrating AI into Existing Games
 
-在已有游戏中接入大模型，大致可以分成竞技/动作类和陪玩/队友类。
+Within existing games, one important direction is end-to-end game VLA or vision-action agents. These systems aim to map visual observations, task instructions, and interaction history directly to game actions. Lumine AI and NitroGen belong more naturally to this category. Lumine targets 3D open-world games and uses a vision-language model to unify perception, reasoning, and action, generating keyboard-and-mouse controls from raw pixels and invoking reasoning when needed. NitroGen is trained through large-scale supervised behavior cloning on public gameplay videos paired with actions, aiming to build a vision-action foundation model that generalizes across many games.
 
-竞技和动作游戏对实时性要求极高。移动、瞄准、躲避、技能释放等微操往往需要 30Hz 甚至更高频率的响应，而当前通用 VLM/LLM 的推理延迟仍然较高，很难直接承担每一帧的低层控制。因此，更可行的架构不是“每一帧都调用大模型”，而是让大模型负责宏观决策，例如目标选择、战术规划、任务分解和局势判断，再由轻量策略模型、行为克隆模型、强化学习策略或规则控制器完成实时操作。
+This direction has the advantage of a short control loop and stronger real-time potential, especially for action, exploration, and open-world control. However, it still faces challenges in long-horizon planning, explicit memory, complex puzzle solving, and failure recovery.
 
-Lumine AI 和 NitroGen 体现了这种趋势。Lumine 更强调在开放世界游戏中结合视觉理解、行动策略和事件触发式推理：高频动作由专门的控制系统执行，复杂判断则在必要时调用推理能力。NitroGen 则通过大规模游戏视频-动作数据进行监督式行为克隆，试图学习跨游戏的“操作直觉”。这说明游戏智能体的核心问题不是让一个大模型包办所有事情，而是如何让慢速但擅长理解和规划的模型，与快速但专注执行的小模型协同工作。
+## Hierarchical Game Agents
 
-陪玩类、AI 队友和智能 NPC 的落地路径会更自然一些。它们对毫秒级微操的要求较低，更强调对游戏场景、玩家意图和剧情语境的理解。这样的系统不一定需要直接输出键鼠操作，而是通过语音、文本或游戏内行为与玩家互动：解释任务、提醒目标、陪伴探索、辅助解谜、扮演角色、提供战术建议，或者在队伍中承担一个可信的协作者角色。
+A different direction is hierarchical game agents. These systems usually assign high-level task understanding, goal decomposition, strategic planning, and reflection to VLMs or LLMs, while low-level policies, behavior trees, reinforcement learning agents, or rule-based controllers handle real-time execution. This architecture resembles "slow thinking plus fast acting": the large model does not need to control every frame, but instead makes decisions at key moments, such as choosing the next objective, interpreting task state, planning a route, or recovering from failure.
 
-这一方向的挑战不在于手速，而在于场景理解、角色一致性、长期记忆、剧情边界控制和游戏状态接入。对于商业游戏来说，它也更容易先落地：一方面能增强沉浸感和陪伴感，另一方面不会像自动代打一样直接破坏竞技公平性。
+Hierarchical agents are better suited for long-horizon tasks, puzzle solving, open-world exploration, and complex interactions, but they also introduce system-level challenges such as asynchronous inference, state synchronization, error propagation, and latency control.
 
-## 参与游戏生成：从生产工具到动态世界
+## Companions, Teammates, and NPCs
 
-另一条主线是 AI 生成游戏。
+Companion agents, AI teammates, and intelligent NPCs form another application category that is closer to product deployment. These systems usually do not require high-frequency low-level control. Instead, they need to understand the game scene, player intent, narrative context, and character identity. An AI companion can act as a quest assistant, tactical coach, story character, or voice-based partner.
 
-在研发阶段，大模型已经可以深入内容生产流程，包括概念设计、剧情对白、关卡草案、任务设计、资产生成、代码辅助、自动化测试、本地化和平衡性分析。这个方向目前最成熟，大模型更像游戏开发团队的生产力工具，帮助设计师、美术、程序和 QA 更快地迭代创意与验证方案。
+Compared with competitive control agents, this category has lower real-time pressure, but higher requirements for scene understanding, long-term memory, role consistency, and safety boundaries. In many commercial games, making large models understand the game world and interact with players may be more practical than asking them to directly play the game.
 
-不过，商业游戏不是一组孤立素材的堆叠。它要求风格统一、体验可控、版权清晰、性能稳定、数值可平衡，也要求内容能够被测试、调试和复现。因此，大模型短期内更像是提升创作效率的“协作层”，而不是完全替代人工创作的黑箱。
+## AI-Generated Games
 
-更具想象力的是玩家游玩过程中的实时生成。未来的游戏可能不再只依赖预先制作好的地图、任务和对白，而是根据玩家行为、偏好和历史经历动态生成个性化内容。系统可以实时生成支线任务、NPC 反应、场景变化、敌人配置，甚至局部关卡结构。
+The second broad direction is AI-generated games. During game development, large models can already participate deeply in content production, including concept design, narrative writing, level drafts, quest design, asset generation, coding assistance, automated testing, localization, and balance analysis. In this stage, large models function more like production copilots for game teams, helping designers, artists, engineers, and QA teams generate ideas, validate concepts, and iterate faster.
 
-更激进的方向是基于 world model 的“神经游戏引擎”：模型不再只是生成素材，而是直接生成一个可交互世界。但这条路还很早期，仍然面临长期一致性、物理规则稳定性、可控性、实时算力、设计师可编辑性和测试验证等难题。短期内更现实的形态会是“传统游戏引擎 + 局部生成式内容”，而不是完全由神经网络实时生成整个游戏世界。
+This direction is relatively mature, but it does not mean large models can fully replace game development. Commercial games still require consistent style, explicit rules, controllable experiences, copyright clarity, and engineering maintainability.
 
-## 混合式游戏智能系统
+## Runtime Dynamic Generation
 
-总体来看，大模型在游戏中的应用可以理解为三种能力的扩展：理解游戏、参与游戏、生成游戏。
+A more futuristic direction is dynamic generation during gameplay. Future games may generate personalized quests, NPC reactions, story branches, scene changes, or even local level structures based on the player's behavior, preferences, and history. A more radical path is world-model-based or neural game engines, where models directly generate interactive worlds.
 
-竞技类应用受限于实时性，更适合采用“大模型宏观决策 + 小模型实时控制”的分层架构；陪玩和 NPC 应用更依赖场景理解、对话、记忆和角色一致性；游戏开发与运行时生成则体现了大模型作为内容生产引擎的潜力。
+However, this direction is still at an early stage and faces major challenges in long-term consistency, physical rule stability, controllability, compute cost, designer editability, and testing. In the near term, the more realistic form is likely to be "traditional game engines plus local generative content," rather than entire game worlds generated in real time by neural networks.
 
-未来最有价值的方向，可能不是训练一个单一大模型端到端解决所有问题，而是构建低延迟、可控、可记忆、可生成的混合式游戏智能系统。游戏世界本身就是多层系统：引擎负责物理与渲染，脚本负责规则与剧情，玩家带来意图与变化。大模型真正适合进入的位置，也许正是在这些层之间，成为理解世界、组织行动和生成内容的中间智能层。
+## Hybrid Game Intelligence
+
+Overall, the role of large models in games is expanding from content-generation tools to game-understanding and interaction systems. End-to-end VLAs are promising for real-time control and cross-game generalization; hierarchical agents are better suited for long-horizon reasoning and complex tasks; companions and NPCs are closer to commercial interaction experiences; and AI-generated games may reshape both game production and personalized gameplay.
+
+The most valuable future systems are unlikely to rely on a single large model doing everything. Instead, they will likely be hybrid game intelligence systems composed of large models, lightweight policies, game engines, memory modules, and generative content systems.
 
 ## References
 
