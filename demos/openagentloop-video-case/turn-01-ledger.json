@@ -1,0 +1,347 @@
+{
+  "all_satisfied": false,
+  "arithmetic_mean": 0.8571428571428571,
+  "constraint_scores": [
+    {
+      "constraint_id": "modern_kitchen_scene",
+      "evidence": "f0: The scene shows stainless steel appliances, a range hood, and counters typical of a modern kitchen.; f1: The scene features stainless steel appliances, a large range hood, and professional kitchen equipment.; f2: The setting features stainless steel appliances, a large exhaust hood, and professional counters, indicating a modern kitchen.",
+      "frame_observations": [
+        {
+          "evidence": "The scene shows stainless steel appliances, a range hood, and counters typical of a modern kitchen.",
+          "frame_index": 0,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "The scene features stainless steel appliances, a large range hood, and professional kitchen equipment.",
+          "frame_index": 1,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "The setting features stainless steel appliances, a large exhaust hood, and professional counters, indicating a modern kitchen.",
+          "frame_index": 2,
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "satisfied": true,
+      "score": 1.0
+    },
+    {
+      "constraint_id": "chef_count",
+      "evidence": "f0: Exactly one chef is visible in the center of the frame.; f1: There is a second person visible on the far right wearing a white shirt/apron, violating the 'exactly one' count.; f2: There are two people visible wearing chef attire (white jackets/shirts and aprons), one in the center and one in the background right.",
+      "frame_observations": [
+        {
+          "evidence": "Exactly one chef is visible in the center of the frame.",
+          "frame_index": 0,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "There is a second person visible on the far right wearing a white shirt/apron, violating the 'exactly one' count.",
+          "frame_index": 1,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "evidence": "There are two people visible wearing chef attire (white jackets/shirts and aprons), one in the center and one in the background right.",
+          "frame_index": 2,
+          "satisfied": false,
+          "score": 0.0
+        }
+      ],
+      "satisfied": false,
+      "score": 0.0
+    },
+    {
+      "constraint_id": "chef_white_jacket",
+      "evidence": "f0: The chef is wearing a standard white chef's jacket.; f1: The central figure is wearing a white double-breasted chef's jacket.; f2: The central chef is wearing a distinct white double-breasted chef's jacket.",
+      "frame_observations": [
+        {
+          "evidence": "The chef is wearing a standard white chef's jacket.",
+          "frame_index": 0,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "The central figure is wearing a white double-breasted chef's jacket.",
+          "frame_index": 1,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "The central chef is wearing a distinct white double-breasted chef's jacket.",
+          "frame_index": 2,
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "satisfied": true,
+      "score": 1.0
+    },
+    {
+      "constraint_id": "chef_centered_behind_table",
+      "evidence": "f0: The chef is standing centrally behind a large wooden butcher-block table.; f1: The chef is standing in the center of the frame behind a large wooden butcher-block table.; f2: The main chef is positioned in the horizontal center of the frame, standing behind a large wooden table.",
+      "frame_observations": [
+        {
+          "evidence": "The chef is standing centrally behind a large wooden butcher-block table.",
+          "frame_index": 0,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "The chef is standing in the center of the frame behind a large wooden butcher-block table.",
+          "frame_index": 1,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "The main chef is positioned in the horizontal center of the frame, standing behind a large wooden table.",
+          "frame_index": 2,
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "satisfied": true,
+      "score": 1.0
+    },
+    {
+      "constraint_id": "steam_rising_motion",
+      "evidence": "f0: Visible steam is rising from a pot on the stove in the background.; f1: Visible steam is rising from a metal pot on the stove in the background left.; f2: Visible white steam is rising from a metal pot on the stove in the background left.",
+      "frame_observations": [
+        {
+          "evidence": "Visible steam is rising from a pot on the stove in the background.",
+          "frame_index": 0,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "Visible steam is rising from a metal pot on the stove in the background left.",
+          "frame_index": 1,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "Visible white steam is rising from a metal pot on the stove in the background left.",
+          "frame_index": 2,
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "satisfied": true,
+      "score": 1.0
+    },
+    {
+      "constraint_id": "three_red_tomatoes_left",
+      "evidence": "f0: There are exactly three red tomatoes on the left side of the table.; f1: There are exactly three red tomatoes lined up on the left side of the wooden table.; f2: There are exactly three red tomatoes lined up on the left side of the wooden table.",
+      "frame_observations": [
+        {
+          "evidence": "There are exactly three red tomatoes on the left side of the table.",
+          "frame_index": 0,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "There are exactly three red tomatoes lined up on the left side of the wooden table.",
+          "frame_index": 1,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "There are exactly three red tomatoes lined up on the left side of the wooden table.",
+          "frame_index": 2,
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "satisfied": true,
+      "score": 1.0
+    },
+    {
+      "constraint_id": "two_blue_bowls_right",
+      "evidence": "f0: There are exactly two blue bowls on the right side of the table.; f1: There are exactly two blue bowls on the right side of the wooden table.; f2: There are exactly two blue bowls placed on the right side of the wooden table.",
+      "frame_observations": [
+        {
+          "evidence": "There are exactly two blue bowls on the right side of the table.",
+          "frame_index": 0,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "There are exactly two blue bowls on the right side of the wooden table.",
+          "frame_index": 1,
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "evidence": "There are exactly two blue bowls placed on the right side of the wooden table.",
+          "frame_index": 2,
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "satisfied": true,
+      "score": 1.0
+    }
+  ],
+  "failed_constraint_ids": [
+    "chef_count"
+  ],
+  "frame_scores": [
+    {
+      "constraint_scores": [
+        {
+          "constraint_id": "modern_kitchen_scene",
+          "evidence": "The scene shows stainless steel appliances, a range hood, and counters typical of a modern kitchen.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "chef_count",
+          "evidence": "Exactly one chef is visible in the center of the frame.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "chef_white_jacket",
+          "evidence": "The chef is wearing a standard white chef's jacket.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "chef_centered_behind_table",
+          "evidence": "The chef is standing centrally behind a large wooden butcher-block table.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "steam_rising_motion",
+          "evidence": "Visible steam is rising from a pot on the stove in the background.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "three_red_tomatoes_left",
+          "evidence": "There are exactly three red tomatoes on the left side of the table.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "two_blue_bowls_right",
+          "evidence": "There are exactly two blue bowls on the right side of the table.",
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "frame_index": 0,
+      "raw_output": "```json\n{\n  \"frame_index\": 0,\n  \"constraint_scores\": [\n    {\n      \"constraint_id\": \"modern_kitchen_scene\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The scene shows stainless steel appliances, a range hood, and counters typical of a modern kitchen.\"\n    },\n    {\n      \"constraint_id\": \"chef_count\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"Exactly one chef is visible in the center of the frame.\"\n    },\n    {\n      \"constraint_id\": \"chef_white_jacket\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The chef is wearing a standard white chef's jacket.\"\n    },\n    {\n      \"constraint_id\": \"chef_centered_behind_table\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The chef is standing centrally behind a large wooden butcher-block table.\"\n    },\n    {\n      \"constraint_id\": \"steam_rising_motion\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"Visible steam is rising from a pot on the stove in the background.\"\n    },\n    {\n      \"constraint_id\": \"three_red_tomatoes_left\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"There are exactly three red tomatoes on the left side of the table.\"\n    },\n    {\n      \"constraint_id\": \"two_blue_bowls_right\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"There are exactly two blue bowls on the right side of the table.\"\n    }\n  ]\n}\n```",
+      "url": "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/turn-01/frame-00.png"
+    },
+    {
+      "constraint_scores": [
+        {
+          "constraint_id": "modern_kitchen_scene",
+          "evidence": "The scene features stainless steel appliances, a large range hood, and professional kitchen equipment.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "chef_count",
+          "evidence": "There is a second person visible on the far right wearing a white shirt/apron, violating the 'exactly one' count.",
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "constraint_id": "chef_white_jacket",
+          "evidence": "The central figure is wearing a white double-breasted chef's jacket.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "chef_centered_behind_table",
+          "evidence": "The chef is standing in the center of the frame behind a large wooden butcher-block table.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "steam_rising_motion",
+          "evidence": "Visible steam is rising from a metal pot on the stove in the background left.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "three_red_tomatoes_left",
+          "evidence": "There are exactly three red tomatoes lined up on the left side of the wooden table.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "two_blue_bowls_right",
+          "evidence": "There are exactly two blue bowls on the right side of the wooden table.",
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "frame_index": 1,
+      "raw_output": "```json\n{\n  \"frame_index\": 1,\n  \"constraint_scores\": [\n    {\n      \"constraint_id\": \"modern_kitchen_scene\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The scene features stainless steel appliances, a large range hood, and professional kitchen equipment.\"\n    },\n    {\n      \"constraint_id\": \"chef_count\",\n      \"score\": 0.0,\n      \"satisfied\": false,\n      \"evidence\": \"There is a second person visible on the far right wearing a white shirt/apron, violating the 'exactly one' count.\"\n    },\n    {\n      \"constraint_id\": \"chef_white_jacket\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The central figure is wearing a white double-breasted chef's jacket.\"\n    },\n    {\n      \"constraint_id\": \"chef_centered_behind_table\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The chef is standing in the center of the frame behind a large wooden butcher-block table.\"\n    },\n    {\n      \"constraint_id\": \"steam_rising_motion\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"Visible steam is rising from a metal pot on the stove in the background left.\"\n    },\n    {\n      \"constraint_id\": \"three_red_tomatoes_left\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"There are exactly three red tomatoes lined up on the left side of the wooden table.\"\n    },\n    {\n      \"constraint_id\": \"two_blue_bowls_right\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"There are exactly two blue bowls on the right side of the wooden table.\"\n    }\n  ]\n}\n```",
+      "url": "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/turn-01/frame-01.png"
+    },
+    {
+      "constraint_scores": [
+        {
+          "constraint_id": "modern_kitchen_scene",
+          "evidence": "The setting features stainless steel appliances, a large exhaust hood, and professional counters, indicating a modern kitchen.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "chef_count",
+          "evidence": "There are two people visible wearing chef attire (white jackets/shirts and aprons), one in the center and one in the background right.",
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "constraint_id": "chef_white_jacket",
+          "evidence": "The central chef is wearing a distinct white double-breasted chef's jacket.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "chef_centered_behind_table",
+          "evidence": "The main chef is positioned in the horizontal center of the frame, standing behind a large wooden table.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "steam_rising_motion",
+          "evidence": "Visible white steam is rising from a metal pot on the stove in the background left.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "three_red_tomatoes_left",
+          "evidence": "There are exactly three red tomatoes lined up on the left side of the wooden table.",
+          "satisfied": true,
+          "score": 1.0
+        },
+        {
+          "constraint_id": "two_blue_bowls_right",
+          "evidence": "There are exactly two blue bowls placed on the right side of the wooden table.",
+          "satisfied": true,
+          "score": 1.0
+        }
+      ],
+      "frame_index": 2,
+      "raw_output": "```json\n{\n  \"frame_index\": 2,\n  \"constraint_scores\": [\n    {\n      \"constraint_id\": \"modern_kitchen_scene\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The setting features stainless steel appliances, a large exhaust hood, and professional counters, indicating a modern kitchen.\"\n    },\n    {\n      \"constraint_id\": \"chef_count\",\n      \"score\": 0.0,\n      \"satisfied\": false,\n      \"evidence\": \"There are two people visible wearing chef attire (white jackets/shirts and aprons), one in the center and one in the background right.\"\n    },\n    {\n      \"constraint_id\": \"chef_white_jacket\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The central chef is wearing a distinct white double-breasted chef's jacket.\"\n    },\n    {\n      \"constraint_id\": \"chef_centered_behind_table\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"The main chef is positioned in the horizontal center of the frame, standing behind a large wooden table.\"\n    },\n    {\n      \"constraint_id\": \"steam_rising_motion\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"Visible white steam is rising from a metal pot on the stove in the background left.\"\n    },\n    {\n      \"constraint_id\": \"three_red_tomatoes_left\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"There are exactly three red tomatoes lined up on the left side of the wooden table.\"\n    },\n    {\n      \"constraint_id\": \"two_blue_bowls_right\",\n      \"score\": 1.0,\n      \"satisfied\": true,\n      \"evidence\": \"There are exactly two blue bowls placed on the right side of the wooden table.\"\n    }\n  ]\n}\n```",
+      "url": "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/turn-01/frame-02.png"
+    }
+  ],
+  "frame_urls": [
+    "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/turn-01/frame-00.png",
+    "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/turn-01/frame-01.png",
+    "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/turn-01/frame-02.png"
+  ],
+  "prompt": "A realistic cinematic video in a modern kitchen. One chef wearing a white jacket stands centered behind a wooden table. Gentle steam rises from a small pot in the background. Three red tomatoes are on the left side of the table and two blue bowls are on the right side.",
+  "schema_version": "agnes-video-ledger-v1"
+}

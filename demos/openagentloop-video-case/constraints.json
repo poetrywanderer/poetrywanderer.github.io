@@ -1,0 +1,54 @@
+{
+  "constraints": [
+    {
+      "constraint_id": "modern_kitchen_scene",
+      "dimension": "scene",
+      "expected_answer": "Yes",
+      "question": "Is the video set in a modern kitchen?",
+      "threshold": 0.8
+    },
+    {
+      "constraint_id": "chef_count",
+      "dimension": "count",
+      "expected_answer": "Yes",
+      "question": "Is there exactly one chef visible in the video?",
+      "threshold": 0.8
+    },
+    {
+      "constraint_id": "chef_white_jacket",
+      "dimension": "color",
+      "expected_answer": "Yes",
+      "question": "Is the chef wearing a white jacket?",
+      "threshold": 0.8
+    },
+    {
+      "constraint_id": "chef_centered_behind_table",
+      "dimension": "spatial",
+      "expected_answer": "Yes",
+      "question": "Is the chef standing centered behind a wooden table?",
+      "threshold": 0.8
+    },
+    {
+      "constraint_id": "steam_rising_motion",
+      "dimension": "motion",
+      "expected_answer": "Yes",
+      "question": "Is gentle steam rising from a small pot in the background?",
+      "threshold": 0.8
+    },
+    {
+      "constraint_id": "three_red_tomatoes_left",
+      "dimension": "spatial",
+      "expected_answer": "Yes",
+      "question": "Are there three red tomatoes on the left side of the table?",
+      "threshold": 0.8
+    },
+    {
+      "constraint_id": "two_blue_bowls_right",
+      "dimension": "spatial",
+      "expected_answer": "Yes",
+      "question": "Are there two blue bowls on the right side of the table?",
+      "threshold": 0.8
+    }
+  ],
+  "schema_version": "agnes-video-constraints-v1"
+}

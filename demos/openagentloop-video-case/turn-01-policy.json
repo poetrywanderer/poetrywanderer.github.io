@@ -1,0 +1,39 @@
+{
+  "parsed_output": {
+    "action": "regenerate:video",
+    "diagnosis": "The chef_count constraint failed in frames 1 and 2 due to a second person appearing in the background right.",
+    "failed_constraint_ids": [
+      "chef_count"
+    ],
+    "preserve_constraint_ids": [
+      "modern_kitchen_scene",
+      "chef_white_jacket",
+      "chef_centered_behind_table",
+      "steam_rising_motion",
+      "three_red_tomatoes_left",
+      "two_blue_bowls_right"
+    ],
+    "prompt": "A realistic cinematic video in a modern kitchen. Exactly one person, a chef wearing a white jacket, stands centered behind a wooden table. There are absolutely no other people, chefs, or assistants visible anywhere in the background or sides of the frame. Gentle steam rises from a small pot in the background. Three red tomatoes are on the left side of the table and two blue bowls are on the right side. Make every required object visible in every frame. No extra objects. Keep counts, colors, side placement, and visibility stable.",
+    "rewrite_plan": {
+      "camera_constraints": [
+        "realistic cinematic video"
+      ],
+      "consistency_rules": [
+        "exactly one person visible in every frame",
+        "no other people or staff in the background or periphery"
+      ],
+      "layout_constraints": [
+        "centered behind a wooden table",
+        "three red tomatoes on the left side of the table",
+        "two blue bowls on the right side of the table",
+        "small pot in the background"
+      ],
+      "main_subject": "exactly one chef wearing a white jacket",
+      "motion_constraints": [
+        "gentle steam rising from the small pot"
+      ],
+      "scene": "modern kitchen"
+    }
+  },
+  "raw_output": "{\n  \"diagnosis\": \"The chef_count constraint failed in frames 1 and 2 due to a second person appearing in the background right.\",\n  \"action\": \"regenerate:video\",\n  \"failed_constraint_ids\": [\n    \"chef_count\"\n  ],\n  \"preserve_constraint_ids\": [\n    \"modern_kitchen_scene\",\n    \"chef_white_jacket\",\n    \"chef_centered_behind_table\",\n    \"steam_rising_motion\",\n    \"three_red_tomatoes_left\",\n    \"two_blue_bowls_right\"\n  ],\n  \"rewrite_plan\": {\n    \"scene\": \"modern kitchen\",\n    \"main_subject\": \"exactly one chef wearing a white jacket\",\n    \"layout_constraints\": [\n      \"centered behind a wooden table\",\n      \"three red tomatoes on the left side of the table\",\n      \"two blue bowls on the right side of the table\",\n      \"small pot in the background\"\n    ],\n    \"motion_constraints\": [\n      \"gentle steam rising from the small pot\"\n    ],\n    \"camera_constraints\": [\n      \"realistic cinematic video\"\n    ],\n    \"consistency_rules\": [\n      \"exactly one person visible in every frame\",\n      \"no other people or staff in the background or periphery\"\n    ]\n  },\n  \"prompt\": \"A realistic cinematic video in a modern kitchen. Exactly one person, a chef wearing a white jacket, stands centered behind a wooden table. There are absolutely no other people, chefs, or assistants visible anywhere in the background or sides of the frame. Gentle steam rises from a small pot in the background. Three red tomatoes are on the left side of the table and two blue bowls are on the right side.\"\n}"
+}

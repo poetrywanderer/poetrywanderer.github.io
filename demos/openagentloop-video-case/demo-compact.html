@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compact Video Agent Loop Demo</title>
+  <style>
+    :root {
+      --fg: #111;
+      --muted: #666;
+      --line: #d9d9d9;
+      --soft: #f7f7f7;
+      --ok: #0f7a43;
+      --bad: #b42318;
+      --blue: #1d4ed8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #ededed;
+      color: var(--fg);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .board {
+      width: 1600px;
+      min-height: 980px;
+      margin: 0 auto;
+      padding: 22px;
+      background: white;
+      overflow: visible;
+    }
+    .header {
+      display: grid;
+      grid-template-columns: 1fr 430px;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .prompt {
+      font-size: 15px;
+      line-height: 1.3;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: var(--soft);
+      border-radius: 6px;
+    }
+    .legend {
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 410px);
+      gap: 14px;
+    }
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      overflow: hidden;
+      background: #fff;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-width: 0;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--line);
+      background: #fafafa;
+    }
+    .badge {
+      flex: 0 0 auto;
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      background: var(--blue);
+      border-radius: 999px;
+      padding: 3px 9px;
+    }
+    .title {
+      font-size: 17px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .body {
+      padding: 10px;
+      overflow: hidden;
+    }
+    .prompt-in-step {
+      font-size: 12px;
+      line-height: 1.22;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      background: var(--soft);
+      border-radius: 5px;
+      margin-bottom: 8px;
+    }
+    .media-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .media-row.two { grid-template-columns: repeat(2, 1fr); }
+    .media-row.one { grid-template-columns: 1fr; }
+    .media-row.one figure {
+      width: 326px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    figure {
+      margin: 0;
+      border: 1px solid var(--line);
+      background: #f5f5f5;
+      overflow: hidden;
+      border-radius: 5px;
+    }
+    img, video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      height: auto;
+      object-fit: contain;
+      background: #111;
+    }
+    .wide img, .wide video { aspect-ratio: 4 / 3; }
+    figcaption {
+      font-size: 11px;
+      line-height: 1.2;
+      color: var(--muted);
+      padding: 5px 6px;
+      background: white;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .notes {
+      padding: 0 11px 10px;
+      font-size: 13px;
+      line-height: 1.28;
+      color: #333;
+    }
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    ul {
+      margin: 7px 0 0 17px;
+      padding: 0;
+    }
+    li { margin: 2px 0; }
+    .ok { color: var(--ok); font-weight: 700; }
+    .bad { color: var(--bad); font-weight: 700; }
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      line-height: 1.15;
+    }
+    .mini-table td {
+      border-bottom: 1px solid #e7e7e7;
+      padding: 4px 2px;
+      vertical-align: top;
+    }
+    .mini-table tr:last-child td { border-bottom: 0; }
+    .arrow {
+      color: var(--blue);
+      font-weight: 700;
+    }
+    @media (max-width: 900px) {
+      .board {
+        width: 100%;
+        height: auto;
+        padding: 12px;
+      }
+      .header, .grid {
+        display: block;
+      }
+      .step { margin-bottom: 12px; }
+      img, video, .wide img, .wide video { height: auto; }
+    }
+  </style>
+</head>
+<body>
+<main class="board">
+  <section class="header">
+    <h1>Edited-Keyframe<br>Video Agent Loop</h1>
+    <div class="legend">
+      <div><span class="ok">green</span>: satisfied constraint</div>
+      <div><span class="bad">red</span>: failed constraint</div>
+      <div class="small">Pipeline: T2V -> observer -> controller -> image edit -> I2V -> observer</div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <article class="step">
+      <div class="top"><span class="badge">Step 1</span><span class="title">Generate V0 from prompt</span></div>
+      <div class="body">
+        <div class="prompt-in-step">
+          <strong>User prompt:</strong> A realistic cinematic video in a modern kitchen. One chef in a white jacket stands centered behind a wooden table. Steam rises from a pot. Three red tomatoes are on the left; two blue bowls are on the right.
+        </div>
+        <div class="media-row one">
+          <figure class="wide">
+            <video src="initial.mp4" controls preload="metadata"></video>
+            <figcaption>V0 text-to-video output</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="notes">V0 has the right scene style, chef, steam, and blue bowls, but misses some constraints.</div>
+    </article>
+
+    <article class="step">
+      <div class="top"><span class="badge">Step 2</span><span class="title">Observer checks V0</span></div>
+      <div class="body">
+        <div class="media-row">
+          <figure><img src="initial-frames/frame-00.png" alt="V0 frame 0"><figcaption>V0 f0</figcaption></figure>
+          <figure><img src="initial-frames/frame-01.png" alt="V0 frame 1"><figcaption>V0 f1</figcaption></figure>
+          <figure><img src="initial-frames/frame-02.png" alt="V0 frame 2"><figcaption>V0 f2 selected</figcaption></figure>
+        </div>
+      </div>
+      <div class="notes">
+        <span class="ok">OK</span>: kitchen, one chef, white jacket, steam, two bowls<br>
+        <span class="bad">Fail</span>: chef not centered; only two tomatoes
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="top"><span class="badge">Step 3</span><span class="title">Controller plans repair</span></div>
+      <div class="body">
+        <table class="mini-table">
+          <tr><td><strong>Diagnosis</strong></td><td>V0 misses centered chef and exactly three tomatoes.</td></tr>
+          <tr><td><strong>Action</strong></td><td><code>regenerate:video</code> via edited keyframe.</td></tr>
+          <tr><td><strong>Preserve</strong></td><td>kitchen, chef identity, white jacket, steam, blue bowls.</td></tr>
+          <tr><td><strong>Repair</strong></td><td>center chef; add the third red tomato on table-left.</td></tr>
+        </table>
+      </div>
+      <div class="notes"><span class="arrow">Decision:</span> do not directly regenerate from text; repair a keyframe first.</div>
+    </article>
+
+    <article class="step">
+      <div class="top"><span class="badge">Step 4</span><span class="title">Edit selected keyframe</span></div>
+      <div class="body">
+        <div class="media-row two">
+          <figure>
+            <img src="initial-frames/frame-02.png" alt="Reference before edit">
+            <figcaption>Before: selected V0 frame</figcaption>
+          </figure>
+          <figure>
+            <img src="keyframe-repairs/turn-01-reference-edited.png" alt="Edited keyframe">
+            <figcaption>After: Agnes Image edited keyframe</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="notes">Image edit adds the missing tomato and recenters the visual anchor before video regeneration.</div>
+    </article>
+
+    <article class="step">
+      <div class="top"><span class="badge">Step 5</span><span class="title">Generate V1 from edited keyframe</span></div>
+      <div class="body">
+        <div class="media-row one">
+          <figure class="wide">
+            <video src="turn-01.mp4" controls preload="metadata"></video>
+            <figcaption>V1 image-to-video output conditioned on edited keyframe</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="notes">The edited keyframe acts as a visual anchor for scene, layout, and object count.</div>
+    </article>
+
+    <article class="step">
+      <div class="top"><span class="badge">Step 6</span><span class="title">Observer checks V1</span></div>
+      <div class="body">
+        <div class="media-row">
+          <figure><img src="turn-01-frames/frame-00.png" alt="V1 frame 0"><figcaption>V1 f0</figcaption></figure>
+          <figure><img src="turn-01-frames/frame-01.png" alt="V1 frame 1"><figcaption>V1 f1</figcaption></figure>
+          <figure><img src="turn-01-frames/frame-02.png" alt="V1 frame 2"><figcaption>V1 f2</figcaption></figure>
+        </div>
+      </div>
+      <div class="notes">
+        <span class="ok">Fixed</span>: centered chef, three tomatoes, two bowls, steam
+      </div>
+    </article>
+  </section>
+</main>
+</body>
+</html>

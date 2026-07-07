@@ -42,6 +42,22 @@ redirect_from:
   <div class="publication-list">
     <article class="publication-card">
       <div class="publication-card__media">
+        <img src="/images/projects/open-agent-loop-video-case.png" alt="OpenAgentLoop video generation case">
+      </div>
+      <div class="publication-card__body">
+        <div class="publication-card__meta"><span>Open Source</span><span>Generative Agents</span></div>
+        <h3>OpenAgentLoop</h3>
+        <p class="publication-card__authors"><strong>Agent loop framework</strong> for iterative generation and refinement</p>
+        <p>A lightweight runtime for observer-controller loops that turn verifier feedback into structured actions, state transitions, and reusable trajectories.</p>
+        <div class="publication-card__links">
+          <a href="https://github.com/poetrywanderer/OpenAgentLoop">Project</a>
+          <a href="/demos/openagentloop-video-case/demo-compact.html">Demo</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="publication-card">
+      <div class="publication-card__media">
         <img src="/images/projects/diffusion-rl.png" alt="Diffusion and agentic reinforcement learning">
       </div>
       <div class="publication-card__body">

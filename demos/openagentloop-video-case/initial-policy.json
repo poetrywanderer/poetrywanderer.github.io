@@ -1,0 +1,39 @@
+{
+  "parsed_output": {
+    "action": "regenerate:video",
+    "diagnosis": "The chef is not perfectly centered behind the table in all frames, and only two red tomatoes are visible on the left side instead of the required three.",
+    "failed_constraint_ids": [
+      "chef_centered_behind_table",
+      "three_red_tomatoes_left"
+    ],
+    "preserve_constraint_ids": [
+      "modern_kitchen_scene",
+      "chef_count",
+      "chef_white_jacket",
+      "steam_rising_motion",
+      "two_blue_bowls_right"
+    ],
+    "prompt": "A realistic cinematic video in a modern kitchen. One chef wearing a white jacket stands exactly centered behind a wooden table. Gentle steam rises from a small pot in the background. Exactly three red tomatoes are clearly visible on the left side of the table, and exactly two blue bowls are visible on the right side. Make every required object visible in every frame. No extra objects. Keep counts, colors, side placement, and visibility stable.",
+    "rewrite_plan": {
+      "camera_constraints": [
+        "realistic cinematic video"
+      ],
+      "consistency_rules": [
+        "maintain modern kitchen setting",
+        "maintain chef's white jacket",
+        "maintain steam motion"
+      ],
+      "layout_constraints": [
+        "chef stands exactly centered behind a wooden table",
+        "exactly three red tomatoes are visible on the left side of the table",
+        "exactly two blue bowls are visible on the right side of the table"
+      ],
+      "main_subject": "one chef wearing a white jacket",
+      "motion_constraints": [
+        "gentle steam rises from a small pot in the background"
+      ],
+      "scene": "modern kitchen"
+    }
+  },
+  "raw_output": "{\n  \"diagnosis\": \"The chef is not perfectly centered behind the table in all frames, and only two red tomatoes are visible on the left side instead of the required three.\",\n  \"action\": \"regenerate:video\",\n  \"failed_constraint_ids\": [\n    \"chef_centered_behind_table\",\n    \"three_red_tomatoes_left\"\n  ],\n  \"preserve_constraint_ids\": [\n    \"modern_kitchen_scene\",\n    \"chef_count\",\n    \"chef_white_jacket\",\n    \"steam_rising_motion\",\n    \"two_blue_bowls_right\"\n  ],\n  \"rewrite_plan\": {\n    \"scene\": \"modern kitchen\",\n    \"main_subject\": \"one chef wearing a white jacket\",\n    \"layout_constraints\": [\n      \"chef stands exactly centered behind a wooden table\",\n      \"exactly three red tomatoes are visible on the left side of the table\",\n      \"exactly two blue bowls are visible on the right side of the table\"\n    ],\n    \"motion_constraints\": [\n      \"gentle steam rises from a small pot in the background\"\n    ],\n    \"camera_constraints\": [\n      \"realistic cinematic video\"\n    ],\n    \"consistency_rules\": [\n      \"maintain modern kitchen setting\",\n      \"maintain chef's white jacket\",\n      \"maintain steam motion\"\n    ]\n  },\n  \"prompt\": \"A realistic cinematic video in a modern kitchen. One chef wearing a white jacket stands exactly centered behind a wooden table. Gentle steam rises from a small pot in the background. Exactly three red tomatoes are clearly visible on the left side of the table, and exactly two blue bowls are visible on the right side.\"\n}"
+}

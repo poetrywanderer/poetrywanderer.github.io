@@ -1,0 +1,19 @@
+{
+  "assets": [
+    {
+      "local_path": "examples/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial-frames/frame-00.png",
+      "repo_path": "diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial/frame-00.png",
+      "url": "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial/frame-00.png"
+    },
+    {
+      "local_path": "examples/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial-frames/frame-01.png",
+      "repo_path": "diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial/frame-01.png",
+      "url": "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial/frame-01.png"
+    },
+    {
+      "local_path": "examples/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial-frames/frame-02.png",
+      "repo_path": "diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial/frame-02.png",
+      "url": "https://raw.githubusercontent.com/poetrywanderer/Image-store/main/diffusion-agentic-rl/agnes-agent-loop-demo/agnes-agent-loop-demo-chef-edited-keyframe-v1/initial/frame-02.png"
+    }
+  ]
+}
