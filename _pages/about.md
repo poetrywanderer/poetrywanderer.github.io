@@ -51,7 +51,7 @@ redirect_from:
         <p>A lightweight runtime for observer-controller loops that turn verifier feedback into structured actions, state transitions, and reusable trajectories.</p>
         <div class="publication-card__links">
           <a href="https://github.com/poetrywanderer/OpenAgentLoop">Project</a>
-          <a href="/demos/openagentloop-video-case/demo-compact.html">Demo</a>
+          <a href="/demos/openagentloop-video-case/demo.html">Demo</a>
         </div>
       </div>
     </article>
