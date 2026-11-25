@@ -1,0 +1,42 @@
+.wm-intro { margin: 1.2rem 0 2rem; padding: 1.4rem; border: 1px solid #dce5ee; border-radius: .65rem; background: #f5f8fc; }
+.wm-intro .wm-eyebrow { margin: 0 0 .65rem; color: #315c85; font-size: .68rem; font-weight: 700; letter-spacing: .06em; }
+.wm-intro .wm-lead { margin: 0 0 .8rem; color: #172b43; font-size: 1.13rem; font-weight: 700; line-height: 1.6; }
+.wm-intro p { line-height: 1.8; }
+.wm-jump { display: inline-block; font-size: .8rem; font-weight: 700; }
+.wm-pipeline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6rem; padding: 0; margin: 1.5rem 0; list-style: none; counter-reset: none; }
+.wm-pipeline li { margin: 0; padding: .85rem; border: 1px solid #dce5ee; border-radius: .45rem; background: #fbfcfe; }
+.wm-pipeline span { display: block; margin-bottom: .6rem; color: #496d92; font-size: .63rem; font-weight: 700; }
+.wm-pipeline strong { display: block; color: #17334e; font-size: .8rem; }
+.wm-pipeline li p { margin: .45rem 0 0; color: #5b6774; font-size: .72rem; line-height: 1.6; }
+.wm-request { padding: 1rem 1.2rem; border-left: 4px solid #b17b39; background: #fcf8f1; font-style: normal; }
+.wm-request p { margin: .2rem 0; }
+.wm-demo { margin: 1.25rem 0; overflow: hidden; border: 1px solid #dce5ee; border-radius: .6rem; background: #f8fafc; }
+.wm-demo__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; padding: .8rem 1rem; }
+.wm-demo__toolbar label { display: inline; margin: 0; color: #233c55; font-size: .72rem; font-weight: 700; }
+.wm-demo__toolbar select { width: auto; min-height: 2rem; margin: 0; padding: .3rem 1.6rem .3rem .5rem; border: 1px solid #bdcbd9; border-radius: .3rem; background-color: white; color: #17334e; font-size: .72rem; }
+.wm-demo__toolbar > span { color: #65717f; font-size: .63rem; }
+.wm-demo video { display: block; width: 100%; height: auto; aspect-ratio: 18 / 5; margin: 0; background: #10151b; }
+.wm-demo[data-view="engine"] video, .wm-demo[data-view="model"] video { aspect-ratio: 9 / 5; }
+.wm-demo__events { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .45rem; padding: .8rem 1rem .3rem; }
+.wm-demo__events button { min-width: 0; padding: .65rem .45rem; border: 1px solid #ced9e5; border-radius: .35rem; background: white; color: #244d73; cursor: pointer; text-align: left; }
+.wm-demo__events strong { display: block; font-size: .72rem; }
+.wm-demo__events span { display: block; margin-top: .3rem; color: #627286; font-size: .57rem; line-height: 1.5; }
+.wm-demo__events button:hover, .wm-demo__events button[aria-pressed="true"] { border-color: #32689e; background: #edf4fc; }
+.wm-demo button:focus-visible, .wm-demo select:focus-visible { outline: 3px solid #a56a20; outline-offset: 3px; }
+.wm-demo .wm-demo__status { margin: .4rem 1rem .6rem; color: #315a80; font-size: .68rem; line-height: 1.6; }
+.wm-demo .wm-demo__caption { margin: .5rem 1rem; color: #536476; font-size: .7rem; line-height: 1.7; }
+.wm-demo .wm-demo__downloads { display: flex; flex-wrap: wrap; gap: .8rem; margin: .8rem 1rem 1rem; font-size: .67rem; }
+.wm-keyframes { margin: 1.5rem 0; }
+.wm-keyframes img { display: block; width: 100%; height: auto; border: 1px solid #dce5ee; border-radius: .35rem; }
+.wm-keyframes figcaption { margin-top: .5rem; color: #65717f; font-size: .7rem; line-height: 1.6; }
+#demo, #staggered-demo { scroll-margin-top: 5rem; }
+.wm-demo-nav { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.8rem 0 1rem; }
+.wm-demo-nav a { padding: .45rem .7rem; border: 1px solid #dce5ee; border-radius: .35rem; background: #f5f8fc; font-size: .75rem; text-decoration: none; }
+.wm-demo-nav a:hover { background: #edf4fc; border-color: #32689e; }
+@media (max-width: 48em) {
+  .wm-pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wm-intro { padding: 1rem; }
+  .wm-demo__toolbar > span { flex-basis: 100%; }
+  .wm-demo__events { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-right: .65rem; padding-left: .65rem; }
+}
+@media (prefers-reduced-motion: reduce) { .wm-jump { scroll-behavior: auto; } }

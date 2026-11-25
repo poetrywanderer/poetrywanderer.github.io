@@ -1,0 +1,24 @@
+{
+  "engine": {
+    "frame_47_before_layout": "0 barriers; purple barrier meshes absent",
+    "frame_55_start_panorama": "3 clearly separable purple barriers visible (left/right/left), corridor between them",
+    "frame_180": "2 barriers still ahead after passing barrier 1",
+    "frame_300": "route beyond barrier 2; no barrier ahead",
+    "frame_400_look_back": "barriers behind the finish; near ones visible, far one partly occluded",
+    "layout_load": "frame 48, simulation 1.000 s, three tokens 37263/37264/37265, sizes 1.6x1.8x0.35 m, gap 1.8 m",
+    "route": "ordinary input.forward/right; passes at 3.625/4.875/6.100 s; finish 6.558 s; 13.21 m path; max frame step 0.0625 m"
+  },
+  "model": {
+    "frame_47_before_layout": "FAIL: barrier-like green glowing props are already visible before any layout load; model prior invents cover-like objects",
+    "frame_55": "barriers are re-rendered as dark wooden crates/barricades plus green glow; one-to-one correspondence to the three purple boxes is not established",
+    "frame_180": "green glowing pylon and a brown crate; appearance/geometry differ from the engine barrier; exact count not preserved",
+    "frame_300": "no barrier ahead, matching the engine view direction at that moment",
+    "frame_400_look_back": "green glowing pylons and a large dark curved slab; exact three-obstacle count is ambiguous",
+    "verdict": "motion and scene plausibility are present, but exact obstacle count, identity and geometry are NOT conserved; visual controllability is NOT verified"
+  },
+  "conclusion": {
+    "engine_logic_verified": true,
+    "visual_controllability_verified": false,
+    "reason": "The model generates barrier-like props before the real layout call and does not reproduce a stable one-to-one set of three barriers throughout the traversal. This report does not claim visual success based on a smoothly playing video."
+  }
+}

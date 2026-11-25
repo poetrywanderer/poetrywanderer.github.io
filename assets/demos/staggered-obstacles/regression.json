@@ -1,0 +1,184 @@
+{
+  "checks": [
+    "deterministic staggered-layout fixture found",
+    "layout loads through the scene-edit API",
+    "exactly three obstacles are created",
+    "three obstacles remain active",
+    "three independent obstacle tokens",
+    "configured obstacle dimensions are applied",
+    "layout alternates left/right/left",
+    "lateral offsets match",
+    "longitudinal spacing is three metres",
+    "obstacle volumes do not interpenetrate",
+    "obstacle volumes do not interpenetrate",
+    "obstacle volumes do not interpenetrate",
+    "obstacle 0 collides",
+    "obstacle 1 collides",
+    "obstacle 2 collides",
+    "player capsule has clearance along the route",
+    "ordinary movement reaches the finish waypoint (target=8/8, pos=-82.984497,-178.241669, sim=5.316667)",
+    "route completes within nine simulation seconds",
+    "no teleport in the driven trajectory",
+    "driven trajectory covers the route",
+    "temporary player cover still works alongside the layout",
+    "temporary cover replacement is unchanged",
+    "cover replacement does not remove layout obstacles",
+    "layout collision survives cover replacement",
+    "layout collision survives cover replacement",
+    "layout collision survives cover replacement",
+    "layout can be cleared",
+    "cleared obstacle collision is released",
+    "cleared obstacles are no longer drawn",
+    "map objects are untouched"
+  ],
+  "driven": {
+    "max_step_m": 0.020841138437390327,
+    "path_length_m": 12.910993311554193,
+    "route_waypoints": 8,
+    "seconds": 5.333333611488342
+  },
+  "fixture": {
+    "attempt": 1,
+    "corridor_gap_m": 1.8000000715255737,
+    "direction": 0,
+    "layout": {
+      "depth": 0.3499999940395355,
+      "first_distance": 5.0,
+      "height": 1.7999999523162842,
+      "lateral": 1.7000000476837158,
+      "sides": [
+        -1.0,
+        1.0,
+        -1.0
+      ],
+      "spacing": 3.0,
+      "width": 1.600000023841858
+    },
+    "npc_interference_disabled": true,
+    "player_radius_m": 0.41999998688697815,
+    "position": [
+      -83.04783630371094,
+      1.2424211502075195,
+      -190.897705078125
+    ],
+    "search": "deterministic nav sample + 24 yaw directions; validated by loadStaggeredObstacles and capsule path clearance",
+    "waypoints": [
+      [
+        -83.04783630371094,
+        1.2424211502075195,
+        -190.897705078125
+      ],
+      [
+        -83.04783630371094,
+        1.2424211502075195,
+        -189.897705078125
+      ],
+      [
+        -82.59783935546875,
+        1.2424211502075195,
+        -185.897705078125
+      ],
+      [
+        -83.04783630371094,
+        1.2424211502075195,
+        -184.397705078125
+      ],
+      [
+        -83.49783325195313,
+        1.2424211502075195,
+        -182.897705078125
+      ],
+      [
+        -83.04783630371094,
+        1.2424211502075195,
+        -181.397705078125
+      ],
+      [
+        -82.59783935546875,
+        1.2424211502075195,
+        -179.897705078125
+      ],
+      [
+        -83.04783630371094,
+        1.2424211502075195,
+        -177.897705078125
+      ]
+    ],
+    "yaw": 0.0,
+    "yaw_degrees": 0
+  },
+  "layout": {
+    "config": {
+      "depth": 0.3499999940395355,
+      "first_distance": 5.0,
+      "height": 1.7999999523162842,
+      "lateral": 1.7000000476837158,
+      "sides": [
+        -1.0,
+        1.0,
+        -1.0
+      ],
+      "spacing": 3.0,
+      "width": 1.600000023841858
+    },
+    "count": 3,
+    "gap_m": 1.8000000715255737,
+    "loaded": true,
+    "obstacles": [
+      {
+        "index": 0,
+        "position": [
+          -84.74783325195313,
+          1.227420449256897,
+          -185.897705078125
+        ],
+        "side": -1.0,
+        "size": [
+          1.600000023841858,
+          1.7999999523162842,
+          0.3499999940395355
+        ],
+        "token": 37263,
+        "yaw": 0.0
+      },
+      {
+        "index": 1,
+        "position": [
+          -81.34783935546875,
+          1.2274233102798462,
+          -182.897705078125
+        ],
+        "side": 1.0,
+        "size": [
+          1.600000023841858,
+          1.7999999523162842,
+          0.3499999940395355
+        ],
+        "token": 37264,
+        "yaw": 0.0
+      },
+      {
+        "index": 2,
+        "position": [
+          -84.74783325195313,
+          1.227420449256897,
+          -179.897705078125
+        ],
+        "side": -1.0,
+        "size": [
+          1.600000023841858,
+          1.7999999523162842,
+          0.3499999940395355
+        ],
+        "token": 37265,
+        "yaw": 0.0
+      }
+    ]
+  },
+  "passed": true,
+  "tokens": [
+    37263,
+    37264,
+    37265
+  ]
+}

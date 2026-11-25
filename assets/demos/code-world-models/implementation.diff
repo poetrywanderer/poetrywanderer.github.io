@@ -1,0 +1,473 @@
+diff --git a/Matrix-Game-4/game/src/Collision.cpp b/Matrix-Game-4/game/src/Collision.cpp
+index 6a68dcb..e365532 100644
+--- a/Matrix-Game-4/game/src/Collision.cpp
++++ b/Matrix-Game-4/game/src/Collision.cpp
+@@ -35,9 +35,9 @@ class Pair final:public JPH::ObjectLayerPairFilter {public:bool ShouldCollide(JP
+ class QueryLayers final:public JPH::ObjectLayerFilter {public:bool ShouldCollide(JPH::ObjectLayer layer)const override{return layer!=2;}};
+ class ObjectBroad final:public JPH::ObjectVsBroadPhaseLayerFilter {public:bool ShouldCollide(JPH::ObjectLayer,JPH::BroadPhaseLayer)const override{return true;}};
+ class Ignore final:public JPH::BodyFilter {
+-    uint32_t token,attached;
+-public:explicit Ignore(uint32_t t,uint32_t a=0):token(t),attached(a){}
+-bool ShouldCollideLocked(const JPH::Body& b)const override{uint32_t id=uint32_t(b.GetUserData());return (!token||id!=token)&&(!attached||id!=attached);}
++    uint32_t token,attached,extra,extraAttached;
++public:explicit Ignore(uint32_t t,uint32_t a=0,uint32_t e=0,uint32_t ea=0):token(t),attached(a),extra(e),extraAttached(ea){}
++bool ShouldCollideLocked(const JPH::Body& b)const override{uint32_t id=uint32_t(b.GetUserData());return (!token||id!=token)&&(!attached||id!=attached)&&(!extra||id!=extra)&&(!extraAttached||id!=extraAttached);}
+ };
+ void require(bool good,const char* message){if(!good)throw std::runtime_error(message);}
+ struct BoxFrame {V3 size,center;JPH::Quat rotation;};
+@@ -140,9 +140,9 @@ Collision::Collision(const MapData& map) {
+     impl->query=dtAllocNavMeshQuery();require(dtStatusSucceed(impl->query->init(impl->nav,8192)),"Detour query failed");impl->polygons=mesh->npolys;
+ }
+ Collision::~Collision(){impl.reset();JPH::UnregisterTypes();delete JPH::Factory::sInstance;JPH::Factory::sInstance=nullptr;}
+-RayHit Collision::ray(V3 from,V3 to,uint32_t ignore,bool staticOnly)const{
++RayHit Collision::ray(V3 from,V3 to,uint32_t ignore,bool staticOnly,uint32_t ignore2)const{
+     JPH::RRayCast ray(jv(from),jv(to-from));JPH::RayCastSettings settings;settings.mBackFaceModeTriangles=JPH::EBackFaceMode::CollideWithBackFaces;
+-    JPH::ClosestHitCollisionCollector<JPH::CastRayCollector> collector;Ignore filter(ignore,impl->attached(ignore));
++    JPH::ClosestHitCollisionCollector<JPH::CastRayCollector> collector;Ignore filter(ignore,impl->attached(ignore),ignore2,impl->attached(ignore2));
+     JPH::SpecifiedObjectLayerFilter staticFilter(0);QueryLayers all;
+     impl->system.GetNarrowPhaseQuery().CastRay(ray,settings,collector,{},staticOnly?static_cast<const JPH::ObjectLayerFilter&>(staticFilter):all,filter);
+     RayHit out;if(!collector.HadHit())return out;
+@@ -155,12 +155,12 @@ RayHit Collision::ray(V3 from,V3 to,uint32_t ignore,bool staticOnly)const{
+     }
+     return out;
+ }
+-RayHit Collision::sweepBullet(V3 from,V3 to,float radius,uint32_t ignore,bool staticOnly)const{
+-    if(radius<=0)return ray(from,to,ignore,staticOnly);
++RayHit Collision::sweepBullet(V3 from,V3 to,float radius,uint32_t ignore,bool staticOnly,uint32_t ignore2)const{
++    if(radius<=0)return ray(from,to,ignore,staticOnly,ignore2);
+     JPH::SphereShape sphere(radius);
+     JPH::RShapeCast cast(&sphere,JPH::Vec3::sReplicate(1),JPH::RMat44::sTranslation(jv(from)),jv(to-from));
+     JPH::ShapeCastSettings settings;settings.mBackFaceModeTriangles=JPH::EBackFaceMode::CollideWithBackFaces;settings.mReturnDeepestPoint=true;
+-    JPH::ClosestHitCollisionCollector<JPH::CastShapeCollector> collector;Ignore filter(ignore,impl->attached(ignore));
++    JPH::ClosestHitCollisionCollector<JPH::CastShapeCollector> collector;Ignore filter(ignore,impl->attached(ignore),ignore2,impl->attached(ignore2));
+     JPH::SpecifiedObjectLayerFilter staticFilter(0);QueryLayers all;
+     impl->system.GetNarrowPhaseQuery().CastShape(cast,settings,JPH::RVec3::sZero(),collector,{},staticOnly?static_cast<const JPH::ObjectLayerFilter&>(staticFilter):all,filter);
+     RayHit out;if(!collector.HadHit())return out;
+@@ -172,9 +172,9 @@ RayHit Collision::sweepBullet(V3 from,V3 to,float radius,uint32_t ignore,bool st
+     }
+     return out;
+ }
+-bool Collision::overlapBox(const Matrix& volume,uint32_t ignore)const{
++bool Collision::overlapBox(const Matrix& volume,uint32_t ignore,uint32_t ignore2)const{
+     const auto b=frame(volume);JPH::BoxShape shape(jv(b.size*.5f),0);JPH::CollideShapeSettings settings;
+-    JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;Ignore bodies(ignore,impl->attached(ignore));QueryLayers layers;
++    JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;Ignore bodies(ignore,impl->attached(ignore),ignore2,impl->attached(ignore2));QueryLayers layers;
+     impl->system.GetNarrowPhaseQuery().CollideShape(&shape,JPH::Vec3::sReplicate(1),JPH::RMat44::sRotationTranslation(b.rotation,jv(b.center)),settings,JPH::RVec3::sZero(),collector,{},layers,bodies);
+     return collector.HadHit();
+ }
+diff --git a/Matrix-Game-4/game/src/Collision.h b/Matrix-Game-4/game/src/Collision.h
+index 5948dbb..bf2ea48 100644
+--- a/Matrix-Game-4/game/src/Collision.h
++++ b/Matrix-Game-4/game/src/Collision.h
+@@ -7,9 +7,9 @@ class Collision {
+ public:
+     explicit Collision(const MapData& map);
+     ~Collision();
+-    RayHit ray(V3 from,V3 to,uint32_t ignore=0,bool staticOnly=false) const;
+-    RayHit sweepBullet(V3 from,V3 to,float radius,uint32_t ignore,bool staticOnly=false) const;
+-    bool overlapBox(const Matrix& volume,uint32_t ignore=0) const;
++    RayHit ray(V3 from,V3 to,uint32_t ignore=0,bool staticOnly=false,uint32_t ignore2=0) const;
++    RayHit sweepBullet(V3 from,V3 to,float radius,uint32_t ignore,bool staticOnly=false,uint32_t ignore2=0) const;
++    bool overlapBox(const Matrix& volume,uint32_t ignore=0,uint32_t ignore2=0) const;
+     void setObstacle(uint32_t token,const Matrix* collisionVolume,const Matrix* navigationVolume=nullptr);
+     void addDebris(const Matrix& meshTransform,V3 localCenter,V3 localSize,V3 velocity,V3 angularVelocity);
+     void stepDebris(float dt);
+diff --git a/Matrix-Game-4/game/src/Encounter.cpp b/Matrix-Game-4/game/src/Encounter.cpp
+index 38d740d..839dfff 100644
+--- a/Matrix-Game-4/game/src/Encounter.cpp
++++ b/Matrix-Game-4/game/src/Encounter.cpp
+@@ -100,8 +100,10 @@ struct Encounter::Impl {
+     struct Supply {int kind=1,owner=0;uint32_t token=0;double next=0;};
+     struct Trap {uint32_t token=0,owner=0;V3 pos;double planted=0;bool active=true;};
+     struct Effect {V3 pos;Color color;double born=0;float radius=1;int kind=0;V3 velocity;};
+-    struct Cover {uint32_t token=0,owner=0;V3 base;float yaw=0,height=0,durability=300;double born=0;bool placedEvent=false;};
++    struct Cover {uint32_t token=0,owner=0;V3 base;float yaw=0,height=0,durability=300;double born=0;bool placedEvent=false,temporary=false;};
+     struct CoverSettings {V3 size;float distance=3,cooldown=30,lifetime=20,durability=300,rise=.6f,probability=.5f,delay=3,retry=1;bool automatic=true;uint32_t index=0;Color color;std::array<uint32_t,4> fragments;std::array<Part,4> fragmentBounds;};
++    // Player-placed covers are temporary; automatic combat cover keeps the UE lifetime.
++    static constexpr double TemporaryCoverLifetime=10.0;
+     std::filesystem::path root;const MapData& map;Renderer& renderer;Collision collision;std::mt19937 rng;uint32_t seed;
+     std::array<Weapon,3> weapons;std::array<Actor,ActorCount> actors;std::vector<Supply> supplies;std::vector<Pickup> pickups;std::vector<Bullet> bullets;std::vector<Trap> traps;std::vector<Effect> effects;
+     std::vector<DrawObject> staticDraws,renderDraws;std::vector<CatalogObject> objects;std::vector<CombatEvent> events;
+@@ -240,19 +242,19 @@ struct Encounter::Impl {
+     void invalidatePaths(){for(auto& a:actors){a.path.clear();a.thinkAt=0;a.lastGoal=-100;}}
+     void removeCover(){if(wall.token){collision.setObstacle(wall.token,nullptr);wall={};invalidatePaths();}}
+     void resetCover(){removeCover();collision.clearDebris();coverReady=coverAttempt=0;coverMessage.clear();}
+-    bool findCoverPlacement(V3& base,std::string& reason)const{
++    bool findCoverPlacement(V3& base,std::string& reason,uint32_t replaceToken=0)const{
+         const auto& a=actors[PlayerIndex];const auto size=coverSettings.size;V3 desired=a.pos+forward(a.yaw)*coverSettings.distance;
+         float low=1e9f,high=-1e9f;int steps=std::clamp(int(std::ceil(size.x/.5f)),2,64);
+         for(int z=-1;z<=1;++z)for(int x=0;x<=steps;++x){V3 p=desired+rotate({size.x*(float(x)/steps-.5f),0,z*size.z*.5f},a.yaw);
+-            auto ground=collision.ray(p+V3{0,.8f,0},p-V3{0,1.2f,0},a.token);
++            auto ground=collision.ray(p+V3{0,.8f,0},p-V3{0,1.2f,0},a.token,false,replaceToken);
+             if(!ground.hit||ground.normal.y<.95f||ground.token>map.objects.size()){reason="UNSUPPORTED GROUND";return false;}low=std::min(low,ground.point.y);high=std::max(high,ground.point.y);}
+         if(high-low>.08f){reason="UNEVEN GROUND";return false;}base={desired.x,high+.005f,desired.z};
+         Matrix volume=transform(base+V3{0,size.y*.5f,0},{size.x+.2f,size.y-.005f,size.z+.2f},a.yaw);
+-        if(collision.overlapBox(volume,a.token)){reason="SPACE OCCUPIED";return false;}
++        if(collision.overlapBox(volume,a.token,replaceToken)){reason="SPACE OCCUPIED";return false;}
+         // UE independently guards pawn capsule AABBs, including nonblocking pawns.
+         auto temp=volume;V3 center=position(temp),extent{(std::abs(temp._11)+std::abs(temp._31))*.5f,size.y*.5f,(std::abs(temp._13)+std::abs(temp._33))*.5f};
+         for(int i=EnemyFirst;i<ActorCount;++i){const auto& other=actors[i];if(other.health<=0)continue;V3 c=other.pos+V3{0,.9f,0};if(std::abs(c.x-center.x)<=extent.x+.42f&&std::abs(c.z-center.z)<=extent.z+.42f&&std::abs(c.y-center.y)<=extent.y+.9f){reason="SPACE OCCUPIED";return false;}}
+-        if(collision.sweepBullet(a.pos+V3{0,.9f,0},base+V3{0,size.y*.5f,0},.08f,a.token).hit){reason="DEPLOYMENT BLOCKED";return false;}return true;
++        if(collision.sweepBullet(a.pos+V3{0,.9f,0},base+V3{0,size.y*.5f,0},.08f,a.token,false,replaceToken).hit){reason="DEPLOYMENT BLOCKED";return false;}return true;
+     }
+     bool canPlaceCover(std::string& reason)const{const auto& a=actors[PlayerIndex];
+         if(a.health<=0||!a.grounded||a.crouch||a.actionEnd>time||a.reloadEnd>time){reason="STAND ON GROUND";return false;}
+@@ -264,7 +266,21 @@ struct Encounter::Impl {
+         auto& a=actors[PlayerIndex];wall={token(coverSettings.index,CatalogObject::Exempt|CatalogObject::Rotation),a.token,base,a.yaw,0,coverSettings.durability,time,false};
+         if(recording)coverUsed=true;coverReady=time+std::max(1.f,coverSettings.cooldown);coverMessage.clear();invalidatePaths();return true;
+     }
+-    void updateCover(){if(!wall.token)return;if(time-wall.born>=std::max(1.f,coverSettings.lifetime)){removeCover();return;}
++    // H input: validate the new footprint first, then replace the old cover so
++    // collision, navigation and draw state are released in one place.
++    bool placeTemporaryCover(){++counts["CoverRequests"];
++        auto& a=actors[PlayerIndex];
++        if(a.health<=0||!a.grounded||a.crouch||a.actionEnd>time||a.reloadEnd>time){coverMessage="STAND ON GROUND";return false;}
++        std::string reason;V3 base;
++        const bool replacing=wall.token!=0;
++        if(!findCoverPlacement(base,reason,replacing?wall.token:0)){coverMessage=reason;return false;}
++        if(!replacing){if(recording&&coverUsed){coverMessage="USED THIS CLIP";return false;}if(time<coverReady){coverMessage="COOLDOWN";return false;}}
++        if(replacing)removeCover();
++        wall={token(coverSettings.index,CatalogObject::Exempt|CatalogObject::Rotation),a.token,base,a.yaw,0,coverSettings.durability,time,false,true};
++        if(recording)coverUsed=true;coverReady=time+std::max(1.f,coverSettings.cooldown);coverMessage.clear();invalidatePaths();
++        ++counts[replacing?"CoverReplaced":"CoverTemporaryPlaced"];return true;
++    }
++    void updateCover(){if(!wall.token)return;const double lifetime=wall.temporary?TemporaryCoverLifetime:std::max(1.0,double(coverSettings.lifetime));if(time-wall.born>=lifetime){++counts["CoverExpired"];removeCover();return;}
+         float progress=coverSettings.rise>0?std::clamp(float((time-wall.born)/coverSettings.rise),0.f,1.f):1;
+         float remainder=1-progress,height=coverSettings.size.y*(1-remainder*remainder*remainder);if(height<=0)return;
+         if(height!=wall.height){wall.height=height;auto volume=coverVolume();auto nav=transform(wall.base+V3{0,coverSettings.size.y*.5f,0},coverSettings.size,wall.yaw);collision.setObstacle(wall.token,&volume,&nav);bounds(wall.token,coverMesh());objects[wall.token].rotation={0,wall.yaw*180/Pi,0};}
+@@ -417,7 +433,7 @@ struct Encounter::Impl {
+             bool readyWanted=(autoPlay?a.target>=0&&actors[a.target].health>0&&visible(i,a.target):input.fire||input.ads)||finishingShot(a);
+             readyWanted=readyWanted&&a.health>0&&a.actionEnd<=time&&a.reloadEnd<=time&&!a.raised&&a.shieldAlpha<.01f;
+             a.weaponReadyAlpha=approach(a.weaponReadyAlpha,readyWanted?1.f:0.f,dt*(readyWanted?8.f:3.f));
+-            if(i==PlayerIndex&&input.cover)placeCover();
++            if(i==PlayerIndex&&input.cover)placeTemporaryCover();
+             bool dashing=a.action=="Dash"&&time<a.actionStart+.892857143;
+             if(a.action=="Trap"||time<a.holdUntil)desired={};
+             if(!dashing){V3 horizontal{a.velocity.x,0,a.velocity.z},diff=desired-horizontal;float max=8.333333f*dt;if(diff.length()>max)diff=diff.normalized()*max;horizontal=horizontal+diff;a.velocity.x=horizontal.x;a.velocity.z=horizontal.z;}
+@@ -685,7 +701,10 @@ std::string Encounter::action(int p)const{const auto& a=impl->actors.at(p);if(!a
+     if(a.health>0&&a.shotWeapon==a.weapon&&a.shieldAlpha<.001f&&impl->time>=a.lastShot&&impl->time-a.lastShot<impl->animations.at("MM_"+impl->weapons[a.weapon].name+"_Fire").duration)return "Fire";
+     if(flatLength(a.velocity)>.15f)return "Walk";return "Idle";}
+ void Encounter::hud(HudState& h,int p)const{const auto& a=impl->actors.at(p);h.combat=true;h.player=p+1;h.automatic=p!=0||impl->automatic;h.ammo=a.ammo[a.weapon];h.weapon=a.weapon;h.owned=a.owned;h.health=a.health;h.shield=a.shield;h.raised=a.raised;h.trapCooldown=float(std::max(0.0,a.trapReady-impl->time));h.combatAction=action(p);h.kills=int(impl->counts.contains("EnemyDied")?impl->counts.at("EnemyDied"):0);
+-    h.coverDurability=impl->wall.token?impl->wall.durability:0;h.coverStatus=impl->wall.token?std::to_string(int(impl->wall.durability))+" HP":impl->recording&&impl->coverUsed?"USED IN CLIP":impl->time<impl->coverReady?std::to_string(int(std::ceil(impl->coverReady-impl->time)))+" S":"READY";h.coverHint=impl->coverMessage;}
++    h.coverDurability=impl->wall.token?impl->wall.durability:0;
++    if(impl->wall.token){if(impl->wall.temporary)h.coverStatus="TEMP "+std::to_string(std::max(0,int(std::ceil(Impl::TemporaryCoverLifetime-(impl->time-impl->wall.born)))))+" S";else h.coverStatus=std::to_string(int(impl->wall.durability))+" HP";}
++    else h.coverStatus=impl->recording&&impl->coverUsed?"USED IN CLIP":impl->time<impl->coverReady?std::to_string(int(std::ceil(impl->coverReady-impl->time)))+" S":"READY";
++    h.coverHint=impl->coverMessage;}
+ bool Encounter::recoveryRequested()const{return impl->recovery;}
+ bool Encounter::recover(){if(!impl->restart())return false;impl->maintenance();impl->pose();++impl->counts["PairedRecovery"];return true;}
+ bool Encounter::playerAlive()const{return impl->actors[Impl::PlayerIndex].health>0;}
+@@ -697,7 +716,31 @@ bool Encounter::retry(){
+ }
+ uint64_t Encounter::step()const{return impl->tick;}
+ double Encounter::seconds()const{return impl->time;}
+-Json Encounter::diagnostics()const{Json actors=Json::array();for(const auto& a:impl->actors)actors.push_back({{"position",{a.pos.x,a.pos.y,a.pos.z}},{"health",a.health},{"index",a.index},{"shield",a.shield},{"weapon",a.weapon},{"owned",a.owned},{"ammo",a.ammo},{"action",a.action},{"yaw",a.yaw},{"pitch",a.pitch},{"grounded",a.grounded}});return {{"seconds",impl->time},{"step",impl->tick},{"seed",impl->seed},{"automatic",impl->automatic},{"navPolygons",impl->collision.navPolygons()},{"events",impl->counts},{"characters",actors},{"bullets",impl->bullets.size()},{"pickups",impl->pickups.size()},{"recoveryRequested",impl->recovery},{"cover",{{"active",impl->wall.token!=0},{"durability",impl->wall.durability},{"height",impl->wall.height},{"index",impl->coverSettings.index},{"generation",impl->coverGeneration},{"selected",impl->coverSelected},{"used",impl->coverUsed},{"cooldown",std::max(0.0,impl->coverReady-impl->time)}}}};}
++Json Encounter::diagnostics()const{Json actors=Json::array();for(const auto& a:impl->actors)actors.push_back({{"position",{a.pos.x,a.pos.y,a.pos.z}},{"health",a.health},{"index",a.index},{"shield",a.shield},{"weapon",a.weapon},{"owned",a.owned},{"ammo",a.ammo},{"action",a.action},{"yaw",a.yaw},{"pitch",a.pitch},{"grounded",a.grounded}});return {{"seconds",impl->time},{"step",impl->tick},{"seed",impl->seed},{"automatic",impl->automatic},{"navPolygons",impl->collision.navPolygons()},{"events",impl->counts},{"characters",actors},{"bullets",impl->bullets.size()},{"pickups",impl->pickups.size()},{"recoveryRequested",impl->recovery},{"cover",{{"active",impl->wall.token!=0},{"temporary",impl->wall.temporary},{"token",impl->wall.token},{"durability",impl->wall.durability},{"height",impl->wall.height},{"age",impl->wall.token?impl->time-impl->wall.born:0.0},{"remaining",impl->wall.token?std::max(0.0,(impl->wall.temporary?Impl::TemporaryCoverLifetime:double(impl->coverSettings.lifetime))-(impl->time-impl->wall.born)):0.0},{"index",impl->coverSettings.index},{"generation",impl->coverGeneration},{"selected",impl->coverSelected},{"used",impl->coverUsed},{"cooldown",std::max(0.0,impl->coverReady-impl->time)}}}};}
++Json Encounter::coverState()const{const auto& w=impl->wall;const bool active=w.token!=0;const double lifetime=w.temporary?Impl::TemporaryCoverLifetime:double(impl->coverSettings.lifetime);return {{"active",active},{"token",w.token},{"temporary",w.temporary},{"owner",w.owner},{"height",w.height},{"durability",w.durability},{"age",active?impl->time-w.born:0.0},{"remaining",active?std::max(0.0,lifetime-(impl->time-w.born)):0.0},{"position",{w.base.x,w.base.y,w.base.z}},{"yaw",w.yaw},{"message",impl->coverMessage}};}
++bool Encounter::prepareTemporaryCoverDemo(Json& fixture){
++    auto& g=*impl;auto& a=g.actors[Impl::PlayerIndex];
++    const V3 originalPosition=a.pos;const float originalYaw=a.yaw;
++    g.resetCover();
++    std::string reason;V3 base;
++    for(int attempt=0;attempt<200;++attempt){
++        V3 candidate;
++        if(attempt==0)candidate=a.pos;
++        else if(!g.collision.randomPoint(g.start,2,35,g.rng,candidate))continue;
++        a.pos=candidate;g.collision.teleport(a.body,candidate);a.velocity={};a.grounded=true;a.action.clear();a.actionEnd=a.reloadEnd=0;a.crouch=false;a.anchor=candidate;
++        for(int direction=0;direction<24;++direction){
++            a.yaw=direction*Pi/12;a.pitch=0;g.pose();
++            if(g.findCoverPlacement(base,reason)){
++                a.anchor=a.pos;a.lastProgress=g.time;
++                fixture={{"position",{a.pos.x,a.pos.y,a.pos.z}},{"yaw",a.yaw},{"yaw_degrees",direction*15},{"cover_base",{base.x,base.y,base.z}},{"attempt",attempt},{"direction",direction},{"search","deterministic nav sample + 24 yaw directions; validated by findCoverPlacement"}};
++                return true;
++            }
++        }
++    }
++    a.pos=originalPosition;a.yaw=originalYaw;g.collision.teleport(a.body,originalPosition);g.pose();
++    fixture={{"error","no validated temporary-cover fixture found"},{"position",{originalPosition.x,originalPosition.y,originalPosition.z}}};
++    return false;
++}
+ Json Encounter::sceneTest(){
+     auto& g=*impl;
+     const auto require=[](bool ok,const char* message){if(!ok)throw std::runtime_error(message);};
+@@ -1013,6 +1056,93 @@ Json Encounter::coverTest(){
+     recording.finish();setRecording(false);
+     return {{"passed",true},{"checks",checks},{"recordedFramesPerView",96},{"catalogIndex",g.coverSettings.index},{"diagnostics",diagnostics()}};
+ }
++Json Encounter::temporaryCoverTest(){
++    auto& g=*impl;auto& a=g.actors[Impl::PlayerIndex];Json checks=Json::array();
++    const auto require=[&](bool good,const std::string& message){if(!good)throw std::runtime_error("Temporary cover regression: "+message);checks.push_back(message);};
++    const auto count=[&](const char* name){return g.counts[name];};
++    const auto freeze=[&]{setAutopilot(false);a.velocity={};a.action.clear();a.actionEnd=a.reloadEnd=0;a.grounded=true;a.crouch=false;a.shield=0;a.shieldToken=0;a.shieldAlpha=0;a.fireAt=1e9;a.holdUntil=1e9;
++        for(int i=Impl::EnemyFirst;i<Impl::ActorCount;++i){auto& other=g.actors[i];other.health=0;other.deathAt=other.respawnAt=1e9;other.pos={float(i*10),-1000,0};other.shield=0;g.collision.teleport(other.body,other.pos);g.collision.setHitBoxes(other.body,other.token,{},0,nullptr);}g.bullets.clear();g.pose();};
++    freeze();
++    const auto freeLocation=[&]{std::string reason;V3 p;for(int attempt=0;attempt<200;++attempt){
++        if(attempt){V3 candidate;if(!g.collision.randomPoint(g.start,2,35,g.rng,candidate))continue;a.pos=candidate;g.collision.teleport(a.body,candidate);}
++        for(int direction=0;direction<24;++direction){a.yaw=direction*Pi/12;a.pitch=0;g.pose();if(g.findCoverPlacement(p,reason)){a.anchor=a.pos;a.lastProgress=g.time;return;}}}throw std::runtime_error("No clear supported footprint for temporary cover regression");};
++    freeLocation();g.resetCover();
++    const auto mapObjects=g.map.objects.size(),staticDraws=g.staticDraws.size(),actors=g.actors.size();
++    const V3 origin=a.pos;CombatInput input;input.cover=true;advance(1.f/120,input);
++    require(g.wall.token&&g.wall.temporary,"H places a temporary cover");
++    require(g.wall.owner==a.token,"temporary cover is owned by the player");
++    require(std::abs(flatLength(g.wall.base-origin)-3)<.001f,"placement keeps the original three-metre distance");
++    const uint32_t token1=g.wall.token;const V3 base1=g.wall.base;const double born1=g.wall.born;
++    require(std::abs((born1+Impl::TemporaryCoverLifetime)-born1-10.0)<1e-9,"lifetime constant is ten simulation seconds");
++    advance(.65f);require(g.wall.height>0,"cover rises before collision checks");
++    const V3 dir1=forward(g.wall.yaw),center1=position(g.coverVolume());
++    auto hit=g.collision.ray(center1+dir1*.5f,center1-dir1*.5f,a.token,true);
++    require(hit.hit&&hit.token==token1,"active temporary cover participates in collision");
++    // Same footprint: the old cover must be ignored during validation, then replaced.
++    CombatInput inPlace;inPlace.cover=true;advance(1.f/120,inPlace);
++    require(g.wall.token&&g.wall.token!=token1,"in-place placement replaces the old cover");
++    require(g.wall.temporary,"in-place replacement remains temporary");
++    require(std::abs(flatLength(g.wall.base-base1))<1e-3f,"in-place replacement keeps the footprint");
++    require(count("CoverReplaced")==1,"in-place replacement is counted once");
++    auto stale=g.collision.ray(center1+dir1*.5f,center1-dir1*.5f,a.token,true);
++    require(!stale.hit||stale.token!=token1,"in-place replacement removes the old collision token");
++    advance(.65f);
++    const uint32_t tokenInPlace=g.wall.token;
++    auto inPlaceHit=g.collision.ray(center1+dir1*.5f,center1-dir1*.5f,a.token,true);
++    require(inPlaceHit.hit&&inPlaceHit.token==tokenInPlace,"in-place replacement installs new collision");
++    // A slightly rotated footprint still overlaps the old wall; replacement must pass.
++    a.yaw+=5.f*Pi/180;g.pose();
++    CombatInput overlap;overlap.cover=true;advance(1.f/120,overlap);
++    require(g.wall.token&&g.wall.token!=tokenInPlace,"overlapping placement replaces the old cover");
++    require(count("CoverReplaced")==2,"overlapping replacement is counted once");
++    advance(.65f);
++    const uint32_t tokenOverlap=g.wall.token;const V3 overlapBase=g.wall.base;
++    const V3 overlapDir=forward(g.wall.yaw),overlapCenter=position(g.coverVolume());
++    // A foreign obstacle must still block, and a rejected replacement must keep the old wall.
++    const auto size=g.coverSettings.size;const uint32_t fixture=0xfffffff0;
++    Matrix obstruction=transform(a.pos+forward(a.yaw)*g.coverSettings.distance+V3{0,size.y*.5f,0},{size.x*.4f,size.y*.4f,size.z*.4f},a.yaw);
++    g.collision.setObstacle(fixture,&obstruction);
++    CombatInput blocked;blocked.cover=true;advance(1.f/120,blocked);
++    require(g.wall.token==tokenOverlap,"blocked replacement keeps the old temporary cover");
++    require(count("CoverReplaced")==2,"blocked replacement is not counted");
++    auto still=g.collision.ray(overlapCenter+overlapDir*.5f,overlapCenter-overlapDir*.5f,a.token,true);
++    require(still.hit&&still.token==tokenOverlap,"old cover collision survives a rejected replacement");
++    g.collision.setObstacle(fixture,nullptr);
++    // Distinct-position replacement for the recorded demo scenario.
++    int found=-1;V3 base2;std::string reason;
++    for(int direction=0;direction<24&&found<0;++direction){a.yaw=direction*Pi/12;a.pitch=0;g.pose();V3 p;if(g.findCoverPlacement(p,reason,tokenOverlap)&&flatLength(p-overlapBase)>.75f){base2=p;found=direction;}}
++    require(found>=0,"a distinct supported position exists for replacement");
++    CombatInput replace;replace.cover=true;advance(1.f/120,replace);
++    require(g.wall.token&&g.wall.token!=tokenOverlap,"distinct placement replaces the old cover");
++    require(g.wall.temporary,"distinct replacement remains temporary");
++    require(flatLength(g.wall.base-overlapBase)>.75f,"replacement uses a different position");
++    require(std::abs(flatLength(g.wall.base-base2))<1e-4f,"replacement uses the validated footprint");
++    require(count("CoverReplaced")==3,"distinct replacement is counted once");
++    auto oldHit=g.collision.ray(overlapCenter+overlapDir*.5f,overlapCenter-overlapDir*.5f,a.token,true);
++    require(!oldHit.hit||oldHit.token!=tokenOverlap,"old cover collision is removed on distinct replacement");
++    advance(.65f);
++    const uint32_t token2=g.wall.token;const double born2=g.wall.born;
++    const V3 dir2=forward(g.wall.yaw),center2=position(g.coverVolume());
++    auto newHit=g.collision.ray(center2+dir2*.5f,center2-dir2*.5f,a.token,true);
++    require(newHit.hit&&newHit.token==token2,"replacement cover blocks collision after rising");
++    int wallDraws=0;for(const auto& d:g.draw())if(d.instance.objectToken==token1||d.instance.objectToken==token2)++wallDraws;
++    require(wallDraws==1,"exactly one temporary cover is drawn");
++    g.time=born2+9.999;g.updateCover();
++    require(g.wall.token==token2,"cover exists immediately before ten seconds");
++    auto nearHit=g.collision.ray(center2+dir2*.5f,center2-dir2*.5f,a.token,true);
++    require(nearHit.hit&&nearHit.token==token2,"collision is active immediately before ten seconds");
++    g.time=born2+10.0;g.updateCover();
++    require(!g.wall.token,"cover disappears at ten simulation seconds");
++    require(count("CoverExpired")==1,"natural expiry is counted once");
++    auto expiredHit=g.collision.ray(center2+dir2*.5f,center2-dir2*.5f,a.token,true);
++    require(!expiredHit.hit||expiredHit.token!=token2,"expired cover collision is released");
++    bool expiredDrawn=false;for(const auto& d:g.draw())if(d.instance.objectToken==token2)expiredDrawn=true;
++    require(!expiredDrawn,"expired cover is no longer drawn");
++    require(g.map.objects.size()==mapObjects,"map objects are untouched");
++    require(g.staticDraws.size()==staticDraws,"static map draw list is untouched");
++    require(g.actors.size()==actors,"actor array is untouched");
++    return {{"passed",true},{"checks",checks},{"first",{{"token",token1},{"position",{base1.x,base1.y,base1.z}},{"born",born1}}},{"replacement",{{"token",token2},{"position",{base2.x,base2.y,base2.z}},{"born",born2}}},{"lifetime_s",Impl::TemporaryCoverLifetime},{"counts",{{"placed",count("CoverTemporaryPlaced")},{"replaced",count("CoverReplaced")},{"expired",count("CoverExpired")}}},{"cover",coverState()},{"diagnostics",diagnostics()}};
++}
+ Json Encounter::eventTest(){
+     auto& g=*impl;auto& a=g.actors[0];auto& enemy=g.actors[1];Json checks=Json::array();
+     const auto require=[](bool value,const char* message){if(!value)throw std::runtime_error(std::string("Event regression: ")+message);};
+diff --git a/Matrix-Game-4/game/src/Encounter.h b/Matrix-Game-4/game/src/Encounter.h
+index a17bb25..0eb0d12 100644
+--- a/Matrix-Game-4/game/src/Encounter.h
++++ b/Matrix-Game-4/game/src/Encounter.h
+@@ -49,12 +49,15 @@ public:
+     uint64_t step()const;
+     double seconds()const;
+     Json diagnostics()const;
++    Json coverState()const;
++    bool prepareTemporaryCoverDemo(Json& fixture);
+     Json sceneTest();
+     Json mapSurfaceTest();
+     Json selfTest();
+     Json poseTest();
+     Json uePoseTest();
+     Json coverTest();
++    Json temporaryCoverTest();
+     Json trailTest();
+     Json firingTest();
+     Json enemyFiringTest();
+diff --git a/Matrix-Game-4/game/src/MainLinux.cpp b/Matrix-Game-4/game/src/MainLinux.cpp
+index 2d8e551..0ad8abc 100644
+--- a/Matrix-Game-4/game/src/MainLinux.cpp
++++ b/Matrix-Game-4/game/src/MainLinux.cpp
+@@ -23,13 +23,14 @@ Options parse(int argc,char** argv){Options o;for(int i=1;i<argc;++i){std::strin
+     else if(arg=="--manual")o.manual=true;
+     else if(arg=="--offline-demo")o.offline=true;
+     else if(arg=="--offline-test"){o.offline=true;o.offlineOptions.test=true;}
++    else if(arg=="--temporary-cover-demo"){o.offline=true;o.offlineOptions.temporaryCoverDemo=true;}
+     else if(arg=="--offline-auto-record")o.offlineOptions.automaticRecord=true;
+     else if(arg=="--offline-dir")o.offlineOptions.output=value();
+     else if(arg=="--audio-volume")o.offlineOptions.volume=std::stof(value());
+     else if(arg=="--no-audio")o.offlineOptions.noAudio=true;
+     else if(arg=="--demo-record"){o.demo=true;o.record=true;o.manual=true;}
+     else if(arg=="--scene-test"||arg=="--map-surface-test"||arg=="--loadout-test"||arg=="--menu-test"||arg=="--demo-rules-test")o.test=arg;
+-    else if(arg=="--validate"||arg=="--pose-test"||arg=="--event-test"||arg=="--cover-test"||arg=="--fire-test"||arg=="--enemy-fire-test"||arg=="--trail-test"||arg=="--ue-pose-test"||arg=="--visual-test"||arg=="--combat-test")o.test=arg;
++    else if(arg=="--validate"||arg=="--pose-test"||arg=="--event-test"||arg=="--cover-test"||arg=="--temporary-cover-test"||arg=="--fire-test"||arg=="--enemy-fire-test"||arg=="--trail-test"||arg=="--ue-pose-test"||arg=="--visual-test"||arg=="--combat-test")o.test=arg;
+     else throw std::runtime_error("Unknown option: "+arg);}
+     if(o.width<360||o.width>7680||o.height<240||o.height>4320||o.duration<=0||o.duration>3600||!std::isfinite(o.duration)||!std::isfinite(o.coverProbability)||o.coverProbability<0||o.coverProbability>1)throw std::runtime_error("Invalid window/duration/probability");if(o.map&&(o.record||o.test=="--combat-test"))throw std::runtime_error("Recording requires encounter mode");return o;}
+ struct View {V3 pivot;float distance=200,yaw=-.6f,pitch=-.68f,speed=20;V3 forward()const{return {std::sin(yaw)*std::cos(pitch),std::sin(pitch),std::cos(yaw)*std::cos(pitch)};}V3 right()const{return {std::cos(yaw),0,-std::sin(yaw)};}Camera camera()const{return {pivot-forward()*distance,pivot,90};}
+@@ -74,6 +75,7 @@ try{auto opt=parse(argc,argv);root=appRoot();const auto scene=SceneConfig::load(
+         else if(opt.test=="--demo-rules-test")saveJson(reportRoot/"demo-rules-tests.json",encounter.demoRulesTest());
+         else if(opt.test=="--event-test")saveJson(reportRoot/"event-tests.json",encounter.eventTest());
+         else if(opt.test=="--cover-test")saveJson(reportRoot/"cover-tests.json",encounter.coverTest());
++        else if(opt.test=="--temporary-cover-test")saveJson(reportRoot/"temporary-cover-tests.json",encounter.temporaryCoverTest());
+         else if(opt.test=="--fire-test")saveJson(reportRoot/"fire-tests.json",encounter.firingTest());
+         else if(opt.test=="--enemy-fire-test")saveJson(reportRoot/"enemy-fire-tests.json",encounter.enemyFiringTest());
+         else if(opt.test=="--trail-test")saveJson(reportRoot/"trail-tests.json",encounter.trailTest());
+diff --git a/Matrix-Game-4/game/src/OfflineDemo.cpp b/Matrix-Game-4/game/src/OfflineDemo.cpp
+index 3d354b1..b2e98b6 100644
+--- a/Matrix-Game-4/game/src/OfflineDemo.cpp
++++ b/Matrix-Game-4/game/src/OfflineDemo.cpp
+@@ -5,6 +5,7 @@
+ #include "DemoRecorder.h"
+ #include <SDL.h>
+ #include <chrono>
++#include <fstream>
+ #include <iostream>
+ #include <set>
+ #include <thread>
+@@ -38,6 +39,7 @@ std::vector<SoundCue> soundCues(const std::vector<CombatEvent>& events,const Enc
+ 
+ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options){
+     const auto scene=SceneConfig::load(root,options.scene);
++    const bool scripted=options.test||options.temporaryCoverDemo;
+     const auto title=scene.name+" - 48 FPS / 2x";
+     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER))throw std::runtime_error(SDL_GetError());
+     struct Quit{~Quit(){SDL_Quit();}}quit;
+@@ -46,10 +48,10 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+ #ifdef __APPLE__
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+ #endif
+-    std::unique_ptr<SDL_Window,decltype(&SDL_DestroyWindow)> window(SDL_CreateWindow(title.c_str(),SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,options.width,options.height,SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE|(options.test?SDL_WINDOW_HIDDEN:SDL_WINDOW_SHOWN)),SDL_DestroyWindow);
++    std::unique_ptr<SDL_Window,decltype(&SDL_DestroyWindow)> window(SDL_CreateWindow(title.c_str(),SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,options.width,options.height,SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE|(scripted?SDL_WINDOW_HIDDEN:SDL_WINDOW_SHOWN)),SDL_DestroyWindow);
+     if(!window)throw std::runtime_error(SDL_GetError());
+     Renderer renderer(window.get(),options.width,options.height);MapData map(scene);Encounter game(root,map,renderer,options.seed);game.setAutopilot(false);game.takeEvents();
+-    CombatAudio audio(options.volume);AudioOutput output(options.noAudio||options.test);
++    CombatAudio audio(options.volume);AudioOutput output(options.noAudio||scripted);
+     std::unique_ptr<DemoRecorder> recorder;
+     auto folder=options.output.empty()?scene.outputDirectory(root,"offline-recordings"):std::filesystem::absolute(options.output);
+     const auto stamp=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+@@ -70,7 +72,24 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+         paused=false;keys.clear();dx=dy=0;fire=firePulse=ads=false;output.clear();audio.reset();game.takeEvents();next=now();
+         if(!options.test)SDL_SetRelativeMouseMode(SDL_TRUE);
+     };
+-    if(options.automaticRecord||options.test)start();
++    Json demoFixture;
++    if(options.temporaryCoverDemo){
++        if(!game.prepareTemporaryCoverDemo(demoFixture))throw std::runtime_error("Cannot prepare temporary cover demo fixture");
++        game.takeEvents();
++    }
++    if(options.automaticRecord||scripted)start();
++    std::ofstream coverLog;
++    std::filesystem::path coverDir;
++    Json previousCover;
++    double placedSim=-1,replacedSim=-1,expiredSim=-1;
++    int demoPhase=0,demoFirstFrame=-1;uint32_t demoFirstToken=0;double demoReplaceSim=-1;bool demoRequest=false;
++    if(options.temporaryCoverDemo&&recorder){
++        coverDir=recorder->directory().parent_path();
++        coverLog.open(coverDir/"temporary-cover-events.jsonl");
++        if(!coverLog)throw std::runtime_error("Cannot write temporary cover event log");
++        coverLog<<Json{{"event","fixture"},{"fixture",demoFixture},{"simulation_s",game.seconds()}}.dump()<<'\n';coverLog.flush();
++        previousCover=game.coverState();
++    }
+     while(running){
+         if(options.test){
+             auto press=[](SDL_Keycode key){SDL_Event event{};event.type=SDL_KEYDOWN;event.key.keysym.sym=key;event.key.keysym.scancode=SDL_GetScancodeFromKey(key);SDL_PushEvent(&event);event.type=SDL_KEYUP;SDL_PushEvent(&event);};
+@@ -79,6 +98,13 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+             if(frames==480)press(SDLK_ESCAPE);if(frames==481)press(SDLK_RETURN);if(frames==482)press(SDLK_F9);
+             if(frames==530)press(SDLK_F9);if(frames==532)press(SDLK_F9);if(frames==580)running=false;
+             dx+=1.5f;
++        }else if(options.temporaryCoverDemo){
++            // Deterministic state machine: rotate while retrying until a legal
++            // footprint is found, hold, then rotate a little and replace, then
++            // wait for the replacement's ten simulation seconds to expire.
++            demoRequest=false;
++            if(demoPhase==0){if(frames>=10&&frames%6==0){input.cover=true;demoRequest=true;}}
++            else if(demoPhase==2){dx+=16.f;if(frames%6==0&&frames>=demoFirstFrame+42){input.cover=true;demoRequest=true;}}
+         }
+         SDL_Event event;while(SDL_PollEvent(&event)){
+             Json recorded;
+@@ -89,7 +115,7 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+             if(event.type==SDL_QUIT){running=false;continue;}
+             if(event.type==SDL_WINDOWEVENT){
+                 if(event.window.event==SDL_WINDOWEVENT_SIZE_CHANGED)renderer.resize(event.window.data1,event.window.data2);
+-                if(!options.test&&(event.window.event==SDL_WINDOWEVENT_FOCUS_LOST||event.window.event==SDL_WINDOWEVENT_MINIMIZED)){focused=false;pause("focus_lost");}
++                if(!scripted&&(event.window.event==SDL_WINDOWEVENT_FOCUS_LOST||event.window.event==SDL_WINDOWEVENT_MINIMIZED)){focused=false;pause("focus_lost");}
+                 if(event.window.event==SDL_WINDOWEVENT_FOCUS_GAINED)focused=true;
+             }
+             if(event.type==SDL_KEYUP)keys.erase(event.key.keysym.scancode);
+@@ -120,6 +146,26 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+             const double begin=game.seconds();const uint64_t firstStep=game.step();Json applied=Json::array();std::vector<CombatEvent> events;
+             for(int tick=0;tick<TicksPerFrame&&game.playerAlive();++tick){applied.push_back(inputJson(input));game.advance(Step,input);auto part=game.takeEvents();events.insert(events.end(),part.begin(),part.end());input.jump=input.dash=input.reload=input.trap=input.cover=false;input.weapon=-1;firePulse=false;input.fire=fire;}
+             input.lookX=input.lookY=0;dead=!game.playerAlive();game.hud(hud,0);hud.dead=dead;
++            if(options.temporaryCoverDemo){
++                const auto cs=game.coverState();
++                const bool was=previousCover.value("active",false),is=cs.value("active",false);
++                std::string event;
++                if(!was&&is){event="placed";placedSim=game.seconds();}
++                else if(was&&is&&previousCover.value("token",0u)!=cs.value("token",0u)){event="replaced";replacedSim=game.seconds();}
++                else if(was&&!is){event="expired";expiredSim=game.seconds();}
++                if(event.empty()&&demoRequest)event="request";
++                if(coverLog){
++                    coverLog<<Json{{"frame",frames},{"video_s",double(frames)/Fps},{"simulation_s",game.seconds()},{"event",event},{"active_cover_count",is?1:0},{"token",cs.value("token",0u)},{"temporary",cs.value("temporary",false)},{"remaining_s",cs.value("remaining",0.0)},{"position",cs["position"]},{"previous_token",previousCover.value("token",0u)},{"message",cs.value("message","")}}.dump()<<'\n';
++                    if(event=="placed"||event=="replaced"||event=="expired"||event=="request"){coverLog.flush();std::cout<<"[temp-cover] frame "<<frames<<" video_s "<<double(frames)/Fps<<" simulation_s "<<game.seconds()<<' '<<event<<" active="<<(is?1:0)<<" reason="<<cs.value("message","")<<std::endl;}
++                }
++                if(demoPhase==0&&is){demoPhase=1;demoFirstFrame=frames;demoFirstToken=cs.value("token",0u);}
++                else if(demoPhase==1&&frames>=demoFirstFrame+24){demoPhase=2;}
++                else if(demoPhase==2&&is&&cs.value("token",0u)!=demoFirstToken){demoPhase=3;demoReplaceSim=game.seconds();}
++                if((demoPhase==0&&frames>=420)||frames>=700)running=false;
++                if(demoPhase==3&&demoReplaceSim>0&&game.seconds()>=demoReplaceSim+11.0)running=false;
++                previousCover=cs;
++                if(dead)running=false;
++            }
+             auto cues=soundCues(events,game,begin);auto pcm=audio.render(1000,cues);
+             if(recorder){
+                 HudState cleanHud=hud;cleanHud.showHelp=false;cleanHud.recording=false;cleanHud.showFps=false;
+@@ -133,9 +179,16 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+             if(dead){pause("death");}
+             else if(game.recoveryRequested()){pause("recovery");if(!game.recover())throw std::runtime_error("Cannot recover encounter");}
+         }else{game.hud(hud,0);renderer.render(game.draws(),game.camera(0),hud);renderer.present(false);}
++        if(options.temporaryCoverDemo&&frames>=399)running=false;
+         ++frames;
+         // No catch-up burst after encoding stalls: preserve every input frame.
+-        if(!options.test){next+=1./Fps;const double current=now();if(current<next)std::this_thread::sleep_for(std::chrono::duration<double>(next-current));else next=current;}
++        if(!scripted){next+=1./Fps;const double current=now();if(current<next)std::this_thread::sleep_for(std::chrono::duration<double>(next-current));else next=current;}
++    }
++    if(options.temporaryCoverDemo&&!coverDir.empty()){
++        coverLog.close();
++        std::ofstream summary(coverDir/"temporary-cover-summary.json");
++        summary<<Json{{"scenario","deterministic flat fixture; place; hold; rotate and replace; wait for the replacement to expire after 10 simulation seconds"},{"fixture",demoFixture},{"frames",frames},{"fps",Fps},{"speed",Speed},{"lifetime_s",10.0},{"placed_simulation_s",placedSim},{"placed_video_s",placedSim/2},{"replaced_simulation_s",replacedSim},{"replaced_video_s",replacedSim/2},{"expired_simulation_s",expiredSim},{"expired_video_s",expiredSim/2},{"placed_ok",placedSim>=0},{"replaced_ok",replacedSim>=0},{"expired_ok",expiredSim>=0},{"active_at_end",game.coverState()["active"]},{"stop_reason",dead?"death":(placedSim>=0&&replacedSim>=0&&expiredSim>=0?"completed":"incomplete")}}.dump(2)<<'\n';
++        std::cout<<"Temporary cover summary: "<<(coverDir/"temporary-cover-summary.json")<<std::endl;
+     }
+     finish("exit");SDL_SetRelativeMouseMode(SDL_FALSE);return 0;
+ }
+diff --git a/Matrix-Game-4/game/src/OfflineDemo.h b/Matrix-Game-4/game/src/OfflineDemo.h
+index 5a08a49..f8ece64 100644
+--- a/Matrix-Game-4/game/src/OfflineDemo.h
++++ b/Matrix-Game-4/game/src/OfflineDemo.h
+@@ -7,7 +7,7 @@ struct DemoOptions {
+     uint32_t seed=1729;
+     std::string scene="castle";
+     float volume=.6f;
+-    bool automaticRecord=false,noAudio=false,test=false;
++    bool automaticRecord=false,noAudio=false,test=false,temporaryCoverDemo=false;
+     std::filesystem::path output;
+ };
+ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options);

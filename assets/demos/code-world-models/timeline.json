@@ -1,0 +1,67 @@
+{
+  "source_commit": "eece0a51a4e53e90abed52eb66621eb59d1410e7",
+  "take": {
+    "frames": 319,
+    "playback_s": 6.646,
+    "simulation_speed": 2.0,
+    "simulation_seconds": 13.292
+  },
+  "events": {
+    "placed": {
+      "frame": 12,
+      "video_s": 0.25,
+      "simulation_s": 0.542,
+      "position": [
+        -82.07499694824219,
+        1.2274237871170044,
+        -184.10714721679688
+      ]
+    },
+    "replaced": {
+      "frame": 54,
+      "video_s": 1.125,
+      "simulation_s": 2.292,
+      "position": [
+        -80.50591278076172,
+        1.2274249792099,
+        -184.55020141601562
+      ]
+    },
+    "expired": {
+      "frame": 294,
+      "video_s": 6.125,
+      "simulation_s": 12.292,
+      "position": [
+        -80.50591278076172,
+        1.2274249792099,
+        -184.55020141601562
+      ],
+      "last_active_frame": 293
+    }
+  },
+  "replacement_displacement_m": 1.63,
+  "engine_changed_pixels_pct": {
+    "placement_frames_5_to_25": 8.31,
+    "expiry_frames_280_to_300": 7.83
+  },
+  "regression": {
+    "passed": true,
+    "checks": 35,
+    "counts": {
+      "expired": 1,
+      "placed": 1,
+      "replaced": 3
+    }
+  },
+  "model_render": {
+    "frames": 319,
+    "seconds": 14.617,
+    "status": "complete",
+    "padded_frames": 2,
+    "fps": 48.0
+  },
+  "notes": [
+    "10 simulation seconds equals about 5 seconds of 48 fps playback because the recorder runs 2x simulation time.",
+    "All numbers are offline/pre-recorded; no realtime agent log is claimed."
+  ]
+}

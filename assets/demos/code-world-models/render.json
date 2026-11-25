@@ -1,0 +1,42 @@
+{
+  "scene": "ancient-egypt",
+  "scene_name": "Ancient Egypt",
+  "checkpoint": "model.safetensors",
+  "ckpt_keys": [
+    "generator_ema"
+  ],
+  "vae_backend": "taehv",
+  "steps": [
+    1000
+  ],
+  "first_steps": [
+    1000
+  ],
+  "sink_rope_mode": "fixed",
+  "sink_mode": "kv_only",
+  "sink_encoder": "taehv",
+  "sink_source": "image",
+  "sink_image": "sink.png",
+  "sink_sha256": "94e03c1a951467475f120746f71a30afd555176ea3a3d120e4d5ef6d3f8645f6",
+  "prompt": "a third-person shooter game in an ancient Egyptian desert city with a great pyramid, sandstone temples and colonnades, palm trees and sand, stylized cartoon characters firing glowing projectiles, dust and haze, realistic AAA game rendering, physically based materials, natural daylight, detailed sand and stone textures",
+  "hq_first_frame": false,
+  "prompt_mode": "fixed",
+  "prompt_interval_chunks": 1,
+  "t5_runtime": "graph",
+  "dit_parallel": "single",
+  "dit_runtime": "ring-fused",
+  "attention_backend": "sdpa",
+  "vae_graph": true,
+  "early_publish": false,
+  "profile_chunks": false,
+  "reference_pipeline": "stream",
+  "experimental_runtime": true,
+  "frames": 319,
+  "padded_frames": 2,
+  "fps": 48.0,
+  "seed": 0,
+  "status": "complete",
+  "source_name": "reference.mkv",
+  "seconds": 14.616713271010667,
+  "torch": "2.12.0+cu132"
+}

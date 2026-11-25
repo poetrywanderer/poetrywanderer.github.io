@@ -36,10 +36,28 @@ redirect_from:
   <div class="section-heading">
     <span>Projects</span>
     <h2>Recent research</h2>
-    <p>Experiment-driven studies of RL post-training across LLMs, VLMs and Diffusion Models.</p>
+    <p>Experiment-driven studies of RL post-training, multimodal agents, and generative worlds.</p>
   </div>
 
   <div class="publication-list">
+      <article class="publication-card">
+      <div class="publication-card__media">
+        <a href="/blog/code-world-models/" aria-label="Read Coding Agent × Generative Rendering: From World Models to Game Creation">
+          <img src="/assets/demos/code-world-models/comparison-poster.webp" alt="Low-poly game engine frame and Matrix-Game 4.0 neural rendering of the same temporary shield-device experiment">
+        </a>
+      </div>
+      <div class="publication-card__body">
+        <div class="publication-card__meta"><span>Technical Blog</span><span>World Models</span></div>
+        <h3>Coding Agent × Generative Rendering: From World Models to Game Creation</h3>
+        <p class="publication-card__authors"><strong>Research note + demo</strong> on programmable gameplay and generated appearance</p>
+        <p>Explores the division of labor in Matrix-Game 4.0 and CWM through temporary shield-device and supply-device layout experiments, connecting code changes, engine checks, and AI-rendered video on one H20.</p>
+        <div class="publication-card__links">
+          <a href="/blog/code-world-models/">Read</a>
+          <a href="/blog/code-world-models/#demo">Watch demo</a>
+        </div>
+      </div>
+    </article>
+    
     <article class="publication-card">
       <div class="publication-card__media">
         <img src="/images/projects/open-agent-loop-video-case.png" alt="OpenAgentLoop video generation case">

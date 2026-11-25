@@ -1,0 +1,452 @@
+diff --git a/Matrix-Game-4/game/src/Encounter.cpp b/Matrix-Game-4/game/src/Encounter.cpp
+index 839dfff..f1f57f1 100644
+--- a/Matrix-Game-4/game/src/Encounter.cpp
++++ b/Matrix-Game-4/game/src/Encounter.cpp
+@@ -102,11 +102,13 @@ struct Encounter::Impl {
+     struct Effect {V3 pos;Color color;double born=0;float radius=1;int kind=0;V3 velocity;};
+     struct Cover {uint32_t token=0,owner=0;V3 base;float yaw=0,height=0,durability=300;double born=0;bool placedEvent=false,temporary=false;};
+     struct CoverSettings {V3 size;float distance=3,cooldown=30,lifetime=20,durability=300,rise=.6f,probability=.5f,delay=3,retry=1;bool automatic=true;uint32_t index=0;Color color;std::array<uint32_t,4> fragments;std::array<Part,4> fragmentBounds;};
++    struct StaggeredObstacle {uint32_t token=0;V3 base;float yaw=0,width=0,height=0,depth=0;Matrix mesh,volume,nav;};
+     // Player-placed covers are temporary; automatic combat cover keeps the UE lifetime.
+     static constexpr double TemporaryCoverLifetime=10.0;
+     std::filesystem::path root;const MapData& map;Renderer& renderer;Collision collision;std::mt19937 rng;uint32_t seed;
+     std::array<Weapon,3> weapons;std::array<Actor,ActorCount> actors;std::vector<Supply> supplies;std::vector<Pickup> pickups;std::vector<Bullet> bullets;std::vector<Trap> traps;std::vector<Effect> effects;
+     std::vector<DrawObject> staticDraws,renderDraws;std::vector<CatalogObject> objects;std::vector<CombatEvent> events;
++    std::vector<StaggeredObstacle> staggered;
+     std::vector<V3> starts;std::map<std::string,Animation> animations;std::map<std::string,std::map<std::string,Animation>> targetAnimations;std::vector<Appearance> appearances;size_t playerAppearance=0;Json ballisticProbes;
+     float automaticFireMin=.5f,automaticFireMax=2,postSwitchMin=1,postSwitchMax=1.5f;
+     CoverSettings coverSettings;Cover wall;std::mt19937 coverRng;double coverReady=0,coverAttempt=0;uint64_t coverGeneration=0;bool coverSelected=false,coverUsed=false;std::string coverMessage;
+@@ -636,6 +638,7 @@ struct Encounter::Impl {
+     void draw(uint32_t mesh,const Matrix& matrix,Color color,uint32_t tokenId,float radius=2,float surface=0,float maxScreenDiameter=0){DrawObject d;d.mesh=mesh;d.instance.world=matrix;d.instance.color=color;d.instance.objectToken=tokenId;d.instance.surface=surface;d.center=position(matrix);d.radius=radius;d.range=200;d.maxScreenDiameter=maxScreenDiameter;renderDraws.push_back(d);}
+     const std::vector<DrawObject>& draw(float projectileAlpha=1){renderDraws=staticDraws;for(auto& a:actors){for(int j=0;j<6;++j)draw(box,a.boxes[j],bboxFill(partColors[j]),a.token);if(a.action!="Trap"){draw(weapons[a.weapon].mesh,a.gun,bboxFill(weapons[a.weapon].color),a.weaponToken);if(a.shield>0)draw(box,a.shieldMatrix,bboxFill(shieldColor),a.shieldToken);}if(a.flash>0)draw(sphere,transform(a.muzzle,{.3f,.3f,.3f}),rgb(255,244,163),0,.3f,-1,.08f);}
+         if(wall.token&&wall.height>0)draw(box,coverMesh(),bboxFill(coverSettings.color),wall.token,2.4f);
++        for(const auto& o:staggered)if(o.token)draw(box,o.mesh,bboxFill(coverSettings.color),o.token,2.4f);
+         auto pieces=collision.debris();for(size_t i=0;i<pieces.size();++i)draw(coverSettings.fragments[i%4],pieces[i],bboxFill(coverSettings.color),0,2.4f);
+         for(const auto& a:actors)if(a.action=="Trap"&&!a.trapCommitted){Matrix m=transform(a.device,{.5f,.14f,.5f});draw(cylinder,m,bboxFill(rgb(56,149,144)),a.heldTrapToken,.4f);bounds(a.heldTrapToken,m);}
+         for(const auto& b:bullets){const auto& w=weapons[b.weapon];V3 pos=b.previous*(1-projectileAlpha)+b.pos*projectileAlpha;float diameter=w.visualDiameter;
+@@ -741,6 +744,171 @@ bool Encounter::prepareTemporaryCoverDemo(Json& fixture){
+     fixture={{"error","no validated temporary-cover fixture found"},{"position",{originalPosition.x,originalPosition.y,originalPosition.z}}};
+     return false;
+ }
++namespace {
++StaggeredLayout parseStaggeredLayout(const Json& c){
++    StaggeredLayout l;
++    if(c.is_object()){
++        l.width=c.value("width",l.width);l.height=c.value("height",l.height);l.depth=c.value("depth",l.depth);
++        l.spacing=c.value("spacing",l.spacing);l.lateral=c.value("lateral",l.lateral);l.firstDistance=c.value("first_distance",l.firstDistance);
++        if(c.contains("sides")&&c["sides"].is_array()&&c["sides"].size()==3)for(int i=0;i<3;++i)l.sides[i]=c["sides"][i].get<float>();
++    }
++    return l;
++}
++Json staggeredLayoutJson(const StaggeredLayout& l){
++    return {{"width",l.width},{"height",l.height},{"depth",l.depth},{"spacing",l.spacing},{"lateral",l.lateral},{"first_distance",l.firstDistance},{"sides",{l.sides[0],l.sides[1],l.sides[2]}}};
++}
++V3 jsonVec(const Json& v){return {v[0].get<float>(),v[1].get<float>(),v[2].get<float>()};}
++Json vecJson(V3 v){return {v.x,v.y,v.z};}
++}
++Json Encounter::loadStaggeredObstacles(const Json& config){
++    auto& g=*impl;auto& a=g.actors[Impl::PlayerIndex];
++    const auto fail=[&](const std::string& error){clearStaggeredObstacles();return Json{{"loaded",false},{"error",error}};};
++    clearStaggeredObstacles();
++    const auto l=parseStaggeredLayout(config);
++    if(!(l.width>0&&l.height>0&&l.depth>0))return fail("invalid obstacle dimensions");
++    if(l.spacing<=l.depth+1.0f)return fail("spacing leaves no longitudinal passage");
++    const float gap=2*(l.lateral-l.width*.5f);
++    if(gap<1.2f)return fail("central corridor narrower than 1.2 m");
++    if(l.firstDistance<2.f)return fail("first obstacle too close to the player");
++    for(float side:l.sides)if(side==0)return fail("side signs must be non-zero");
++    const size_t mapObjects=g.map.objects.size();
++    Json obstacles=Json::array();
++    for(int i=0;i<3;++i){
++        const float side=l.sides[i]>0?1.f:-1.f;
++        const V3 desired=a.pos+rotate(V3{side*l.lateral,0,l.firstDistance+i*l.spacing},a.yaw);
++        float low=1e9f,high=-1e9f;
++        for(int sz=-1;sz<=1;++sz)for(int sx=-1;sx<=1;++sx){
++            const V3 p=desired+rotate(V3{sx*l.width*.5f,0,sz*l.depth*.5f},a.yaw);
++            auto ground=g.collision.ray(p+V3{0,.8f,0},p-V3{0,1.2f,0},a.token);
++            if(!ground.hit||ground.normal.y<.95f||ground.token>mapObjects)return fail("obstacle "+std::to_string(i)+" has unsupported ground");
++            low=std::min(low,ground.point.y);high=std::max(high,ground.point.y);
++        }
++        if(high-low>.08f)return fail("obstacle "+std::to_string(i)+" ground is uneven");
++        const V3 base{desired.x,high+.005f,desired.z};
++        const Matrix volume=transform(base+V3{0,l.height*.5f,0},{l.width,l.height,l.depth},a.yaw);
++        const Matrix nav=transform(base+V3{0,l.height*.45f,0},{l.width*.98f,l.height*.9f,l.depth*.98f},a.yaw);
++        if(g.collision.overlapBox(volume,a.token))return fail("obstacle "+std::to_string(i)+" space is occupied");
++        const uint32_t t=g.token(g.coverSettings.index,CatalogObject::Exempt|CatalogObject::Rotation);
++        g.collision.setObstacle(t,&volume,&nav);g.bounds(t,volume);g.objects[t].rotation={0,a.yaw*180/Pi,0};
++        g.staggered.push_back({t,base,a.yaw,l.width,l.height,l.depth,volume,volume,nav});
++        obstacles.push_back({{"index",i},{"token",t},{"position",vecJson(base)},{"size",{l.width,l.height,l.depth}},{"yaw",a.yaw},{"side",side}});
++    }
++    g.invalidatePaths();
++    return {{"loaded",true},{"count",g.staggered.size()},{"gap_m",gap},{"config",staggeredLayoutJson(l)},{"obstacles",obstacles}};
++}
++void Encounter::clearStaggeredObstacles(){
++    for(auto& o:impl->staggered)if(o.token)impl->collision.setObstacle(o.token,nullptr);
++    impl->staggered.clear();impl->invalidatePaths();
++}
++Json Encounter::staggeredObstacleState()const{
++    Json obstacles=Json::array();
++    for(const auto& o:impl->staggered)obstacles.push_back({{"token",o.token},{"position",vecJson(o.base)},{"size",{o.width,o.height,o.depth}},{"yaw",o.yaw}});
++    return {{"active",impl->staggered.size()},{"count",impl->staggered.size()},{"obstacles",obstacles}};
++}
++bool Encounter::prepareStaggeredObstacleDemo(Json& fixture){
++    auto& g=*impl;auto& a=g.actors[Impl::PlayerIndex];
++    const V3 originalPosition=a.pos;const float originalYaw=a.yaw;
++    // Explicit demo fixture: remove NPC interference so the trajectory is deterministic.
++    for(int i=Impl::EnemyFirst;i<Impl::ActorCount;++i){auto& other=g.actors[i];other.health=0;other.deathAt=other.respawnAt=1e9;other.pos={float(i*10),-1000,0};other.shield=0;g.collision.teleport(other.body,other.pos);g.collision.setHitBoxes(other.body,other.token,{},0,nullptr);}
++    g.bullets.clear();g.nextSupply=g.nextShield=1e9;g.resetCover();
++    const StaggeredLayout layout;
++    const Json config=staggeredLayoutJson(layout);
++    const std::array<V3,8> localWaypoints={V3{0,0,0},V3{0,0,1},V3{.45f,0,layout.firstDistance},V3{0,0,layout.firstDistance+1.5f},V3{-.45f,0,layout.firstDistance+layout.spacing},V3{0,0,layout.firstDistance+layout.spacing+1.5f},V3{.45f,0,layout.firstDistance+2*layout.spacing},V3{0,0,layout.firstDistance+2*layout.spacing+2.f}};
++    for(int attempt=0;attempt<160;++attempt){
++        V3 candidate;
++        if(attempt==0)candidate=a.pos;
++        else if(!g.collision.randomPoint(g.start,2,30,g.rng,candidate))continue;
++        a.pos=candidate;g.collision.teleport(a.body,candidate);a.velocity={};a.grounded=true;a.action.clear();a.actionEnd=a.reloadEnd=0;a.crouch=false;a.anchor=candidate;
++        for(int direction=0;direction<24;++direction){
++            a.yaw=direction*Pi/12;a.pitch=0;g.pose();
++            const Json loaded=loadStaggeredObstacles(config);
++            if(!loaded.value("loaded",false))continue;
++            Json worldWaypoints=Json::array();
++            std::vector<V3> wps;
++            for(const auto& local:localWaypoints){V3 p=a.pos+rotate(local,a.yaw);wps.push_back(p);worldWaypoints.push_back(vecJson(p));}
++            bool clear=true;
++            for(size_t i=1;i<wps.size()&&clear;++i){
++                const V3 from=wps[i-1],to=wps[i];const int steps=std::max(1,int(std::ceil(flatLength(to-from)/.4f)));
++                for(int s=0;s<=steps&&clear;++s){const V3 p=from+(to-from)*(float(s)/steps);Matrix capsule=transform(p+V3{0,.9f,0},{.84f,1.8f,.84f},a.yaw);if(g.collision.overlapBox(capsule,a.token))clear=false;}
++            }
++            if(!clear)continue;
++            for(const auto& p:wps){Matrix capsule=transform(p+V3{0,.9f,0},{.84f,1.8f,.84f},a.yaw);if(g.collision.overlapBox(capsule,a.token)){clear=false;break;}}
++            if(!clear)continue;
++            a.anchor=a.pos;a.lastProgress=g.time;
++            fixture=Json{{"position",vecJson(a.pos)},{"yaw",a.yaw},{"yaw_degrees",direction*15},{"attempt",attempt},{"direction",direction},
++                {"npc_interference_disabled",true},{"player_radius_m",.42f},{"layout",config},{"waypoints",worldWaypoints},
++                {"corridor_gap_m",2*(layout.lateral-layout.width*.5f)},
++                {"search","deterministic nav sample + 24 yaw directions; validated by loadStaggeredObstacles and capsule path clearance"}};
++            clearStaggeredObstacles();
++            return true;
++        }
++    }
++    a.pos=originalPosition;a.yaw=originalYaw;g.collision.teleport(a.body,originalPosition);g.pose();clearStaggeredObstacles();
++    fixture={{"error","no validated staggered-obstacle fixture found"}};
++    return false;
++}
++Json Encounter::staggeredObstacleTest(){
++    auto& g=*impl;auto& a=g.actors[Impl::PlayerIndex];Json checks=Json::array();
++    setAutopilot(false);
++    const auto require=[&](bool good,const std::string& message){if(!good)throw std::runtime_error("Staggered obstacle regression: "+message);checks.push_back(message);};
++    const auto mapObjects=g.map.objects.size();
++    Json fixture;
++    require(prepareStaggeredObstacleDemo(fixture),"deterministic staggered-layout fixture found");
++    const V3 start=jsonVec(fixture["position"]);const float yaw=fixture["yaw"];
++    const auto loaded=loadStaggeredObstacles(fixture["layout"]);
++    require(loaded.value("loaded",false),"layout loads through the scene-edit API");
++    require(loaded.value("count",0)==3,"exactly three obstacles are created");
++    const auto state=staggeredObstacleState();
++    require(state["active"]==3,"three obstacles remain active");
++    const auto& obstacles=state["obstacles"];
++    std::array<uint32_t,3> tokens{};std::array<V3,3> positions{};std::array<V3,3> sizes{};
++    for(int i=0;i<3;++i){tokens[i]=obstacles[i]["token"].get<uint32_t>();positions[i]=jsonVec(obstacles[i]["position"]);sizes[i]=jsonVec(obstacles[i]["size"]);}
++    require(tokens[0]!=tokens[1]&&tokens[1]!=tokens[2]&&tokens[0]!=tokens[2],"three independent obstacle tokens");
++    require(std::abs(sizes[0].x-1.6f)<1e-4f&&std::abs(sizes[0].y-1.8f)<1e-4f&&std::abs(sizes[0].z-.35f)<1e-4f,"configured obstacle dimensions are applied");
++    std::array<V3,3> local{};
++    for(int i=0;i<3;++i)local[i]=rotate(positions[i]-start,-yaw);
++    require(local[0].x<-.5f&&local[1].x>.5f&&local[2].x<-.5f,"layout alternates left/right/left");
++    require(std::abs(std::abs(local[0].x)-std::abs(local[1].x))<1e-3f&&std::abs(std::abs(local[1].x)-std::abs(local[2].x))<1e-3f,"lateral offsets match");
++    require(std::abs(local[1].z-local[0].z-3.f)<1e-3f&&std::abs(local[2].z-local[1].z-3.f)<1e-3f,"longitudinal spacing is three metres");
++    for(int i=0;i<3;++i)for(int j=i+1;j<3;++j){const V3 d=positions[i]-positions[j];require(flatLength(d)>1.0f,"obstacle volumes do not interpenetrate");}
++    const V3 sideDir=rotate(V3{1,0,0},yaw);
++    for(int i=0;i<3;++i){const V3 c=positions[i]+V3{0,1.f,0};auto hit=g.collision.ray(c-sideDir*(sizes[i].x*.65f),c+sideDir*(sizes[i].x*.65f),a.token);require(hit.hit&&hit.token==tokens[i],"obstacle "+std::to_string(i)+" collides");}
++    // Capsule clearance along the whole deterministic route, not just the waypoints.
++    const auto& wps=fixture["waypoints"];bool clear=true;
++    for(size_t i=1;i<wps.size()&&clear;++i){
++        const V3 from=jsonVec(wps[i-1]),to=jsonVec(wps[i]);const int steps=std::max(1,int(std::ceil(flatLength(to-from)/.4f)));
++        for(int s=0;s<=steps&&clear;++s){const V3 p=from+(to-from)*(float(s)/steps);Matrix capsule=transform(p+V3{0,.9f,0},{.84f,1.8f,.84f},yaw);if(g.collision.overlapBox(capsule,a.token))clear=false;}
++    }
++    require(clear,"player capsule has clearance along the route");
++    // Drive with ordinary local input only; no per-frame position writes.
++    a.pos=start;a.yaw=yaw;a.velocity={};a.grounded=true;a.pitch=0;a.crouch=false;a.ads=false;a.action.clear();a.actionEnd=a.reloadEnd=0;g.collision.teleport(a.body,start);
++    size_t target=0;double startTime=g.time,maxStep=0,pathLength=0;const size_t maxTicks=1200;
++    for(size_t tick=0;tick<maxTicks&&target<wps.size();++tick){
++        V3 to=jsonVec(wps[target])-a.pos;to.y=0;const float distance=to.length();
++        if(distance<.35f){++target;continue;}
++        const V3 dir=to.normalized();CombatInput in;in.forward=dot(dir,forward(a.yaw));in.right=dot(dir,rotate({1,0,0},a.yaw));
++        const V3 before=a.pos;advance(1.f/120,in);const double step=flatLength(a.pos-before);maxStep=std::max(maxStep,step);pathLength+=step;
++    }
++    require(target==wps.size(),"ordinary movement reaches the finish waypoint (target="+std::to_string(target)+"/"+std::to_string(wps.size())+", pos="+std::to_string(a.pos.x)+","+std::to_string(a.pos.z)+", sim="+std::to_string(g.time-startTime)+")");
++    require(g.time-startTime<=9.0,"route completes within nine simulation seconds");
++    require(maxStep<=.05,"no teleport in the driven trajectory");
++    require(pathLength>=10.0,"driven trajectory covers the route");
++    // The player cover singleton stays independent from the three layout objects.
++    a.pos=start;a.yaw=yaw;a.velocity={};a.grounded=true;g.collision.teleport(a.body,start);g.resetCover();g.coverReady=0;
++    CombatInput h;h.cover=true;advance(1.f/120,h);
++    require(g.wall.token!=0,"temporary player cover still works alongside the layout");
++    const uint32_t wallToken=g.wall.token;advance(1.f/120,h);
++    require(g.wall.token&&g.wall.token!=wallToken,"temporary cover replacement is unchanged");
++    require(staggeredObstacleState()["active"]==3,"cover replacement does not remove layout obstacles");
++    for(int i=0;i<3;++i){const V3 c=positions[i]+V3{0,1.f,0};auto hit=g.collision.ray(c-sideDir*(sizes[i].x*.65f),c+sideDir*(sizes[i].x*.65f),a.token);require(hit.hit&&hit.token==tokens[i],"layout collision survives cover replacement");}
++    clearStaggeredObstacles();
++    require(staggeredObstacleState()["active"]==0,"layout can be cleared");
++    const V3 c0=positions[0]+V3{0,1.f,0};auto gone=g.collision.ray(c0-sideDir*(sizes[0].x*.65f),c0+sideDir*(sizes[0].x*.65f),a.token);require(!gone.hit||gone.token!=tokens[0],"cleared obstacle collision is released");
++    bool drawn=false;for(const auto& d:g.draw())for(uint32_t t:tokens)if(d.instance.objectToken==t)drawn=true;
++    require(!drawn,"cleared obstacles are no longer drawn");
++    require(g.map.objects.size()==mapObjects,"map objects are untouched");
++    return {{"passed",true},{"checks",checks},{"fixture",fixture},{"layout",loaded},{"driven",{{"route_waypoints",wps.size()},{"seconds",g.time-startTime},{"max_step_m",maxStep},{"path_length_m",pathLength}}},{"tokens",{tokens[0],tokens[1],tokens[2]}}};
++}
+ Json Encounter::sceneTest(){
+     auto& g=*impl;
+     const auto require=[](bool ok,const char* message){if(!ok)throw std::runtime_error(message);};
+diff --git a/Matrix-Game-4/game/src/Encounter.h b/Matrix-Game-4/game/src/Encounter.h
+index 0eb0d12..50c4dc6 100644
+--- a/Matrix-Game-4/game/src/Encounter.h
++++ b/Matrix-Game-4/game/src/Encounter.h
+@@ -1,6 +1,7 @@
+ #pragma once
+ #include "Collision.h"
+ #include "CameraInput.h"
++#include <array>
+ #include <json.hpp>
+ using Json=nlohmann::json;
+ 
+@@ -20,6 +21,12 @@ struct CombatEvent {
+     bool pointEvent=false,allowPositionOnly=false;
+     V3 surfaceNormal;
+ };
++// Configurable three-obstacle slalom. Independent of the player cover singleton.
++struct StaggeredLayout {
++    float width=1.6f,height=1.8f,depth=.35f;
++    float spacing=3.0f,lateral=1.7f,firstDistance=5.0f;
++    std::array<float,3> sides{-1.f,1.f,-1.f};
++};
+ class Encounter {
+ public:
+     Encounter(const std::filesystem::path& root,const MapData& map,Renderer& renderer,uint32_t seed);
+@@ -51,6 +58,11 @@ public:
+     Json diagnostics()const;
+     Json coverState()const;
+     bool prepareTemporaryCoverDemo(Json& fixture);
++    Json loadStaggeredObstacles(const Json& config=Json::object());
++    void clearStaggeredObstacles();
++    Json staggeredObstacleState()const;
++    bool prepareStaggeredObstacleDemo(Json& fixture);
++    Json staggeredObstacleTest();
+     Json sceneTest();
+     Json mapSurfaceTest();
+     Json selfTest();
+diff --git a/Matrix-Game-4/game/src/MainLinux.cpp b/Matrix-Game-4/game/src/MainLinux.cpp
+index 0ad8abc..149079d 100644
+--- a/Matrix-Game-4/game/src/MainLinux.cpp
++++ b/Matrix-Game-4/game/src/MainLinux.cpp
+@@ -24,13 +24,14 @@ Options parse(int argc,char** argv){Options o;for(int i=1;i<argc;++i){std::strin
+     else if(arg=="--offline-demo")o.offline=true;
+     else if(arg=="--offline-test"){o.offline=true;o.offlineOptions.test=true;}
+     else if(arg=="--temporary-cover-demo"){o.offline=true;o.offlineOptions.temporaryCoverDemo=true;}
++    else if(arg=="--staggered-obstacle-demo"){o.offline=true;o.offlineOptions.staggeredObstacleDemo=true;}
+     else if(arg=="--offline-auto-record")o.offlineOptions.automaticRecord=true;
+     else if(arg=="--offline-dir")o.offlineOptions.output=value();
+     else if(arg=="--audio-volume")o.offlineOptions.volume=std::stof(value());
+     else if(arg=="--no-audio")o.offlineOptions.noAudio=true;
+     else if(arg=="--demo-record"){o.demo=true;o.record=true;o.manual=true;}
+     else if(arg=="--scene-test"||arg=="--map-surface-test"||arg=="--loadout-test"||arg=="--menu-test"||arg=="--demo-rules-test")o.test=arg;
+-    else if(arg=="--validate"||arg=="--pose-test"||arg=="--event-test"||arg=="--cover-test"||arg=="--temporary-cover-test"||arg=="--fire-test"||arg=="--enemy-fire-test"||arg=="--trail-test"||arg=="--ue-pose-test"||arg=="--visual-test"||arg=="--combat-test")o.test=arg;
++    else if(arg=="--validate"||arg=="--pose-test"||arg=="--event-test"||arg=="--cover-test"||arg=="--temporary-cover-test"||arg=="--staggered-obstacle-test"||arg=="--fire-test"||arg=="--enemy-fire-test"||arg=="--trail-test"||arg=="--ue-pose-test"||arg=="--visual-test"||arg=="--combat-test")o.test=arg;
+     else throw std::runtime_error("Unknown option: "+arg);}
+     if(o.width<360||o.width>7680||o.height<240||o.height>4320||o.duration<=0||o.duration>3600||!std::isfinite(o.duration)||!std::isfinite(o.coverProbability)||o.coverProbability<0||o.coverProbability>1)throw std::runtime_error("Invalid window/duration/probability");if(o.map&&(o.record||o.test=="--combat-test"))throw std::runtime_error("Recording requires encounter mode");return o;}
+ struct View {V3 pivot;float distance=200,yaw=-.6f,pitch=-.68f,speed=20;V3 forward()const{return {std::sin(yaw)*std::cos(pitch),std::sin(pitch),std::cos(yaw)*std::cos(pitch)};}V3 right()const{return {std::cos(yaw),0,-std::sin(yaw)};}Camera camera()const{return {pivot-forward()*distance,pivot,90};}
+@@ -76,6 +77,7 @@ try{auto opt=parse(argc,argv);root=appRoot();const auto scene=SceneConfig::load(
+         else if(opt.test=="--event-test")saveJson(reportRoot/"event-tests.json",encounter.eventTest());
+         else if(opt.test=="--cover-test")saveJson(reportRoot/"cover-tests.json",encounter.coverTest());
+         else if(opt.test=="--temporary-cover-test")saveJson(reportRoot/"temporary-cover-tests.json",encounter.temporaryCoverTest());
++        else if(opt.test=="--staggered-obstacle-test")saveJson(reportRoot/"staggered-obstacle-tests.json",encounter.staggeredObstacleTest());
+         else if(opt.test=="--fire-test")saveJson(reportRoot/"fire-tests.json",encounter.firingTest());
+         else if(opt.test=="--enemy-fire-test")saveJson(reportRoot/"enemy-fire-tests.json",encounter.enemyFiringTest());
+         else if(opt.test=="--trail-test")saveJson(reportRoot/"trail-tests.json",encounter.trailTest());
+diff --git a/Matrix-Game-4/game/src/OfflineDemo.cpp b/Matrix-Game-4/game/src/OfflineDemo.cpp
+index b2e98b6..abc27a0 100644
+--- a/Matrix-Game-4/game/src/OfflineDemo.cpp
++++ b/Matrix-Game-4/game/src/OfflineDemo.cpp
+@@ -15,6 +15,9 @@ constexpr int Fps=48,TicksPerFrame=5;
+ constexpr double Step=1./120,Speed=2;
+ Json inputJson(const CombatInput& in){return {{"forward",in.forward},{"right",in.right},{"look_x",in.lookX},{"look_y",in.lookY},{"fire",in.fire},{"ads",in.ads},{"shield",in.shield},{"crouch",in.crouch},{"jump",in.jump},{"dash",in.dash},{"reload",in.reload},{"trap",in.trap},{"cover",in.cover},{"weapon",in.weapon}};}
+ Json vec(V3 v){return {v.x,v.y,v.z};}
++V3 jsonV3(const Json& v){return {v[0].get<float>(),v[1].get<float>(),v[2].get<float>()};}
++float flatLength(V3 p){return std::sqrt(p.x*p.x+p.z*p.z);}
++V3 rotate(V3 p,float yaw){return {p.x*std::cos(yaw)+p.z*std::sin(yaw),p.y,-p.x*std::sin(yaw)+p.z*std::cos(yaw)};}
+ class AudioOutput {
+     SDL_AudioDeviceID device=0;
+ public:
+@@ -32,15 +35,17 @@ public:
+         if(SDL_QueueAudio(device,block.data(),Uint32(block.size()*sizeof(float))))std::cerr<<"Audio queue: "<<SDL_GetError()<<'\n';
+     }
+ };
+-std::vector<SoundCue> soundCues(const std::vector<CombatEvent>& events,const Encounter& game,double start){
+-    return combatSoundCues(events,game.camera(0),game.playerToken(0),start,1000,Speed);
++std::vector<SoundCue> soundCues(const std::vector<CombatEvent>& events,const Encounter& game,double start,double speed){
++    return combatSoundCues(events,game.camera(0),game.playerToken(0),start,1000,speed);
+ }
+ }
+ 
+ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options){
+     const auto scene=SceneConfig::load(root,options.scene);
+-    const bool scripted=options.test||options.temporaryCoverDemo;
+-    const auto title=scene.name+" - 48 FPS / 2x";
++    const bool scripted=options.test||options.temporaryCoverDemo||options.staggeredObstacleDemo;
++    const bool oneX=options.staggeredObstacleDemo;
++    const double simSpeed=oneX?1.0:Speed;
++    const auto title=scene.name+std::string(" - 48 FPS / ")+(oneX?"1x":"2x");
+     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER))throw std::runtime_error(SDL_GetError());
+     struct Quit{~Quit(){SDL_Quit();}}quit;
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,3);
+@@ -62,7 +67,7 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+     auto clearInput=[&]{keys.clear();input={};dx=dy=0;fire=firePulse=ads=false;};
+     auto finish=[&](const std::string& reason){if(recorder){recorder->finish(reason);std::cout<<"Saved "<<recorder->directory()<<" ("<<recorder->frames()<<" frames)"<<std::endl;recorder.reset();SDL_SetWindowTitle(window.get(),title.c_str());}};
+     auto start=[&]{if(recorder||paused||dead)return;
+-        recorder=std::make_unique<DemoRecorder>(session/("take-"+std::to_string(++take)),1280,720,Fps,Json{{"game",scene.id},{"scene",scene.id},{"map_profile",(scene.assets/"map.json").string()},{"seed",options.seed},{"speed",Speed},{"physics_hz",120},{"physics_steps_per_frame",TicksPerFrame},{"simulation_start",game.seconds()},{"simulation_step_start",game.step()},{"prompt",scene.prompt},{"prompt_verified",!scene.prompt.empty()},{"camera_distance",scene.cameraDistance},{"camera_up",scene.cameraUp},{"outline_width",scene.outlineWidth},{"fade_small_edges",scene.fadeSmallEdges},{"nested_checker",true},{"ground_pattern",scene.groundPattern==SceneConfig::GroundPattern::CastleNested?"castle_nested":"egypt_nested"},{"audio_volume",options.volume},{"reference_preprocessing","1280x720 source; use the model's crop_and_resize to 864x480"}});
++        recorder=std::make_unique<DemoRecorder>(session/("take-"+std::to_string(++take)),1280,720,Fps,Json{{"game",scene.id},{"scene",scene.id},{"map_profile",(scene.assets/"map.json").string()},{"seed",options.seed},{"speed",simSpeed},{"physics_hz",120},{"physics_steps_per_frame",oneX?2.5:TicksPerFrame},{"physics_steps_note",oneX?"alternating 2/3 steps per frame at 48 fps (average 2.5, 120 Hz, 1x)":"five steps per frame at 48 fps (120 Hz, 2x)"},{"simulation_start",game.seconds()},{"simulation_step_start",game.step()},{"prompt",scene.prompt},{"prompt_verified",!scene.prompt.empty()},{"camera_distance",scene.cameraDistance},{"camera_up",scene.cameraUp},{"outline_width",scene.outlineWidth},{"fade_small_edges",scene.fadeSmallEdges},{"nested_checker",true},{"ground_pattern",scene.groundPattern==SceneConfig::GroundPattern::CastleNested?"castle_nested":"egypt_nested"},{"audio_volume",options.volume},{"reference_preprocessing","1280x720 source; use the model's crop_and_resize to 864x480"}});
+         recorder->input({{"type","initial"},{"wall_s",now()-origin},{"state",rawState()}});SDL_SetWindowTitle(window.get(),("REC - "+title).c_str());std::cout<<"Recording "<<recorder->directory()<<std::endl;
+     };
+     auto pause=[&](const std::string& reason){finish(reason);paused=true;selection=0;clearInput();if(reason!="death")output.clear();audio.reset();SDL_SetRelativeMouseMode(SDL_FALSE);};
+@@ -77,6 +82,11 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+         if(!game.prepareTemporaryCoverDemo(demoFixture))throw std::runtime_error("Cannot prepare temporary cover demo fixture");
+         game.takeEvents();
+     }
++    Json staggeredFixture;
++    if(options.staggeredObstacleDemo){
++        if(!game.prepareStaggeredObstacleDemo(staggeredFixture))throw std::runtime_error("Cannot prepare staggered obstacle demo fixture");
++        game.takeEvents();
++    }
+     if(options.automaticRecord||scripted)start();
+     std::ofstream coverLog;
+     std::filesystem::path coverDir;
+@@ -90,7 +100,31 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+         coverLog<<Json{{"event","fixture"},{"fixture",demoFixture},{"simulation_s",game.seconds()}}.dump()<<'\n';coverLog.flush();
+         previousCover=game.coverState();
+     }
++    std::ofstream staggerLog;std::filesystem::path staggerDir;
++    std::vector<V3> staggerWaypoints;Json staggerLayout,staggerLoadedLayout;V3 staggerStart{},staggerLastPos{};
++    float staggerYaw=0;std::array<bool,3> staggerPassed{};std::array<double,3> staggerPassSim{-1,-1,-1};
++    std::vector<double> staggerWaypointSim;int staggerWp=0,staggerLayoutFrame=-1;
++    bool staggerLoaded=false,staggerFinished=false,lookBack=false,finishLogged=false;
++    double staggerFinishSim=-1,staggerMaxStep=0,staggerPath=0,staggerStepCarry=0,staggerLayoutSim=-1;
++    if(options.staggeredObstacleDemo){
++        staggerStart=jsonV3(staggeredFixture["position"]);staggerYaw=staggeredFixture["yaw"];staggerLayout=staggeredFixture["layout"];
++        for(const auto& p:staggeredFixture["waypoints"])staggerWaypoints.push_back(jsonV3(p));
++        staggerLastPos=game.playerPosition(0);
++        if(recorder){
++            staggerDir=recorder->directory().parent_path();
++            staggerLog.open(staggerDir/"staggered-obstacle-events.jsonl");
++            if(!staggerLog)throw std::runtime_error("Cannot write staggered obstacle event log");
++            staggerLog<<Json{{"event","fixture"},{"frame",0},{"video_s",0.0},{"simulation_s",game.seconds()},{"fixture",staggeredFixture},{"active_obstacle_count",0}}.dump()<<'\n';staggerLog.flush();
++        }
++    }
+     while(running){
++        if(options.staggeredObstacleDemo&&frames==48&&!staggerLoaded){
++            staggerLoadedLayout=game.loadStaggeredObstacles(staggerLayout);
++            if(!staggerLoadedLayout.value("loaded",false))throw std::runtime_error("Staggered layout failed: "+staggerLoadedLayout.value("error","unknown"));
++            staggerLoaded=true;staggerLayoutFrame=frames;staggerLayoutSim=game.seconds();
++            if(staggerLog){staggerLog<<Json{{"event","layout_loaded"},{"frame",frames},{"video_s",double(frames)/Fps},{"simulation_s",game.seconds()},{"layout",staggerLoadedLayout},{"active_obstacle_count",staggerLoadedLayout.value("count",0)}}.dump()<<'\n';staggerLog.flush();}
++            std::cout<<"[staggered] layout loaded frame "<<frames<<" sim "<<game.seconds()<<" tokens "<<staggerLoadedLayout["obstacles"].dump()<<std::endl;
++        }
+         if(options.test){
+             auto press=[](SDL_Keycode key){SDL_Event event{};event.type=SDL_KEYDOWN;event.key.keysym.sym=key;event.key.keysym.scancode=SDL_GetScancodeFromKey(key);SDL_PushEvent(&event);event.type=SDL_KEYUP;SDL_PushEvent(&event);};
+             if(frames==0){keys.insert(SDL_SCANCODE_W);fire=true;}
+@@ -142,10 +176,51 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+             input.forward=float(held(SDL_SCANCODE_W)||held(SDL_SCANCODE_UP))-float(held(SDL_SCANCODE_S)||held(SDL_SCANCODE_DOWN));
+             input.right=float(held(SDL_SCANCODE_D)||held(SDL_SCANCODE_RIGHT))-float(held(SDL_SCANCODE_A)||held(SDL_SCANCODE_LEFT));
+             input.fire=fire||firePulse;input.ads=ads;input.shield=held(SDL_SCANCODE_F);input.crouch=held(SDL_SCANCODE_C);
+-            input.lookX=CameraInput::pixelsPerTick(dx,TicksPerFrame,Step);input.lookY=CameraInput::pixelsPerTick(dy,TicksPerFrame,Step);dx=dy=0;
++            int frameTicks=TicksPerFrame;
++            if(oneX){staggerStepCarry+=120.0/Fps;frameTicks=int(staggerStepCarry);staggerStepCarry-=frameTicks;if(frameTicks<1)frameTicks=1;}
++            input.lookX=CameraInput::pixelsPerTick(dx,frameTicks,Step);input.lookY=CameraInput::pixelsPerTick(dy,frameTicks,Step);dx=dy=0;
++            if(options.staggeredObstacleDemo&&staggerLoaded&&frames>=48&&frames<56)input.lookX=-CameraInput::maxPixels(Step);
++            if(options.staggeredObstacleDemo&&staggerLoaded&&!staggerFinished&&frames>=60){
++                const Camera cam=game.camera(0);V3 f=cam.target-cam.eye;f.y=0;f=f.normalized();const V3 right{f.z,0,-f.x};
++                V3 pos=game.playerPosition(0);V3 to=staggerWaypoints[staggerWp]-pos;to.y=0;float distance=to.length();
++                if(distance<.45f){
++                    if(staggerLog){staggerLog<<Json{{"event","waypoint_reached"},{"waypoint",staggerWp},{"frame",frames},{"video_s",double(frames)/Fps},{"simulation_s",game.seconds()},{"player_position",vec(pos)}}.dump()<<'\n';staggerLog.flush();}
++                    staggerWaypointSim.push_back(game.seconds());++staggerWp;
++                    if(staggerWp>=int(staggerWaypoints.size())){staggerFinished=true;staggerFinishSim=game.seconds();input.forward=input.right=0;}
++                    else{to=staggerWaypoints[staggerWp]-pos;to.y=0;distance=to.length();}
++                }
++                if(!staggerFinished&&staggerWp<int(staggerWaypoints.size())&&distance>.001f){const V3 dir=to.normalized();input.forward=dot(dir,f);input.right=dot(dir,right);}
++            }
++            if(options.staggeredObstacleDemo&&staggerFinished&&game.seconds()>=staggerFinishSim+0.5&&game.seconds()<staggerFinishSim+2.5){
++                input.lookX=CameraInput::maxPixels(Step);
++                if(!lookBack){lookBack=true;if(staggerLog){staggerLog<<Json{{"event","look_back_started"},{"frame",frames},{"video_s",double(frames)/Fps},{"simulation_s",game.seconds()}}.dump()<<'\n';staggerLog.flush();}}
++            }
+             const double begin=game.seconds();const uint64_t firstStep=game.step();Json applied=Json::array();std::vector<CombatEvent> events;
+-            for(int tick=0;tick<TicksPerFrame&&game.playerAlive();++tick){applied.push_back(inputJson(input));game.advance(Step,input);auto part=game.takeEvents();events.insert(events.end(),part.begin(),part.end());input.jump=input.dash=input.reload=input.trap=input.cover=false;input.weapon=-1;firePulse=false;input.fire=fire;}
++            for(int tick=0;tick<frameTicks&&game.playerAlive();++tick){applied.push_back(inputJson(input));game.advance(Step,input);auto part=game.takeEvents();events.insert(events.end(),part.begin(),part.end());input.jump=input.dash=input.reload=input.trap=input.cover=false;input.weapon=-1;firePulse=false;input.fire=fire;}
+             input.lookX=input.lookY=0;dead=!game.playerAlive();game.hud(hud,0);hud.dead=dead;
++            if(options.staggeredObstacleDemo){
++                const V3 pos=game.playerPosition(0);
++                const double step=flatLength(pos-staggerLastPos);staggerMaxStep=std::max(staggerMaxStep,step);staggerPath+=step;staggerLastPos=pos;
++                const V3 local=rotate(pos-staggerStart,-staggerYaw);
++                const auto state=game.staggeredObstacleState();
++                const float firstDistance=staggerLayout.value("first_distance",4.f),spacing=staggerLayout.value("spacing",3.f);
++                for(int i=0;i<3;++i){
++                    const float z=firstDistance+i*spacing;
++                    if(!staggerPassed[i]&&local.z>z+.5f){
++                        staggerPassed[i]=true;staggerPassSim[i]=game.seconds();
++                        if(staggerLog){const auto& obs=staggerLoadedLayout["obstacles"][i];staggerLog<<Json{{"event","obstacle_passed"},{"obstacle",i},{"token",obs["token"]},{"frame",frames},{"video_s",double(frames)/Fps},{"simulation_s",game.seconds()},{"player_position",vec(pos)},{"obstacle_position",obs["position"]},{"obstacle_size",obs["size"]},{"active_obstacle_count",state["active"]}}.dump()<<'\n';staggerLog.flush();}
++                        std::cout<<"[staggered] passed obstacle "<<i<<" at sim "<<game.seconds()<<std::endl;
++                    }
++                }
++                if(staggerFinished&&!finishLogged){
++                    finishLogged=true;
++                    if(staggerLog){staggerLog<<Json{{"event","finish_reached"},{"frame",frames},{"video_s",double(frames)/Fps},{"simulation_s",game.seconds()},{"player_position",vec(pos)},{"active_obstacle_count",state["active"]}}.dump()<<'\n';staggerLog.flush();}
++                    std::cout<<"[staggered] finish reached at sim "<<game.seconds()<<std::endl;
++                }
++                if(staggerLog)staggerLog<<Json{{"frame",frames},{"video_s",double(frames)/Fps},{"simulation_s",game.seconds()},{"event",""},{"player_position",vec(pos)},{"local_position",vec(local)},{"active_obstacle_count",state["active"]},{"target_waypoint",staggerWp},{"finished",staggerFinished},{"look_back",lookBack}}.dump()<<'\n';
++                if(frames>=479)running=false;
++                if(dead)running=false;
++            }
+             if(options.temporaryCoverDemo){
+                 const auto cs=game.coverState();
+                 const bool was=previousCover.value("active",false),is=cs.value("active",false);
+@@ -166,7 +241,7 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+                 previousCover=cs;
+                 if(dead)running=false;
+             }
+-            auto cues=soundCues(events,game,begin);auto pcm=audio.render(1000,cues);
++            auto cues=soundCues(events,game,begin,simSpeed);auto pcm=audio.render(1000,cues);
+             if(recorder){
+                 HudState cleanHud=hud;cleanHud.showHelp=false;cleanHud.recording=false;cleanHud.showFps=false;
+                 Json eventRows=Json::array();for(const auto& e:events)eventRows.push_back({{"id",e.id},{"step",e.step},{"simulation_s",e.time},{"type",e.type},{"actor",e.actor},{"weapon",e.weapon},{"indices",e.indices},{"tokens",e.tokens},{"position",vec(e.position)}});
+@@ -184,6 +259,23 @@ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options)
+         // No catch-up burst after encoding stalls: preserve every input frame.
+         if(!scripted){next+=1./Fps;const double current=now();if(current<next)std::this_thread::sleep_for(std::chrono::duration<double>(next-current));else next=current;}
+     }
++    if(options.staggeredObstacleDemo&&!staggerDir.empty()){
++        staggerLog.close();
++        Json waypointTimes=Json::array();for(double t:staggerWaypointSim)waypointTimes.push_back(t);
++        std::ofstream summary(staggerDir/"staggered-obstacle-summary.json");
++        summary<<Json{{"scenario","1 s without obstacles; one real layout load; ordinary movement along deterministic slalom waypoints; hold at finish"},
++            {"fixture",staggeredFixture},{"layout_config",staggerLayout},{"layout_loaded",staggerLoadedLayout},
++            {"layout_frame",staggerLayoutFrame},{"layout_simulation_s",staggerLayoutSim},
++            {"frames",frames},{"fps",Fps},{"speed",1.0},{"simulation_s",game.seconds()},
++            {"reached_finish",staggerFinished},{"finish_simulation_s",staggerFinishSim},{"finish_video_s",staggerFinishSim/1.0},
++            {"waypoint_simulation_s",waypointTimes},{"obstacle_pass_simulation_s",{staggerPassSim[0],staggerPassSim[1],staggerPassSim[2]}},
++            {"obstacle_pass_video_s",{staggerPassSim[0]<=0?-1:staggerPassSim[0],staggerPassSim[1]<=0?-1:staggerPassSim[1],staggerPassSim[2]<=0?-1:staggerPassSim[2]}},
++            {"active_obstacles_at_end",game.staggeredObstacleState()["active"]},
++            {"trajectory",{{"max_step_m",staggerMaxStep},{"path_length_m",staggerPath}}},
++            {"npc_interference_disabled",staggeredFixture.value("npc_interference_disabled",false)},
++            {"stop_reason",dead?"death":(staggerFinished?"completed":"incomplete")}}.dump(2)<<'\n';
++        std::cout<<"Staggered obstacle summary: "<<(staggerDir/"staggered-obstacle-summary.json")<<std::endl;
++    }
+     if(options.temporaryCoverDemo&&!coverDir.empty()){
+         coverLog.close();
+         std::ofstream summary(coverDir/"temporary-cover-summary.json");
+diff --git a/Matrix-Game-4/game/src/OfflineDemo.h b/Matrix-Game-4/game/src/OfflineDemo.h
+index f8ece64..79a4521 100644
+--- a/Matrix-Game-4/game/src/OfflineDemo.h
++++ b/Matrix-Game-4/game/src/OfflineDemo.h
+@@ -7,7 +7,7 @@ struct DemoOptions {
+     uint32_t seed=1729;
+     std::string scene="castle";
+     float volume=.6f;
+-    bool automaticRecord=false,noAudio=false,test=false,temporaryCoverDemo=false;
++    bool automaticRecord=false,noAudio=false,test=false,temporaryCoverDemo=false,staggeredObstacleDemo=false;
+     std::filesystem::path output;
+ };
+ int runOfflineDemo(const std::filesystem::path& root,const DemoOptions& options);

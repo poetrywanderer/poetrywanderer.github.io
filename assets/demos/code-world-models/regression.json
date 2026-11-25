@@ -1,0 +1,191 @@
+{
+  "checks": [
+    "H places a temporary cover",
+    "temporary cover is owned by the player",
+    "placement keeps the original three-metre distance",
+    "lifetime constant is ten simulation seconds",
+    "cover rises before collision checks",
+    "active temporary cover participates in collision",
+    "in-place placement replaces the old cover",
+    "in-place replacement remains temporary",
+    "in-place replacement keeps the footprint",
+    "in-place replacement is counted once",
+    "in-place replacement removes the old collision token",
+    "in-place replacement installs new collision",
+    "overlapping placement replaces the old cover",
+    "overlapping replacement is counted once",
+    "blocked replacement keeps the old temporary cover",
+    "blocked replacement is not counted",
+    "old cover collision survives a rejected replacement",
+    "a distinct supported position exists for replacement",
+    "distinct placement replaces the old cover",
+    "distinct replacement remains temporary",
+    "replacement uses a different position",
+    "replacement uses the validated footprint",
+    "distinct replacement is counted once",
+    "old cover collision is removed on distinct replacement",
+    "replacement cover blocks collision after rising",
+    "exactly one temporary cover is drawn",
+    "cover exists immediately before ten seconds",
+    "collision is active immediately before ten seconds",
+    "cover disappears at ten simulation seconds",
+    "natural expiry is counted once",
+    "expired cover collision is released",
+    "expired cover is no longer drawn",
+    "map objects are untouched",
+    "static map draw list is untouched",
+    "actor array is untouched"
+  ],
+  "counts": {
+    "expired": 1,
+    "placed": 1,
+    "replaced": 3
+  },
+  "cover": {
+    "active": false,
+    "age": 0.0,
+    "durability": 300.0,
+    "height": 0.0,
+    "message": "",
+    "owner": 0,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "remaining": 0.0,
+    "temporary": false,
+    "token": 0,
+    "yaw": 0.0
+  },
+  "diagnostics": {
+    "automatic": false,
+    "bullets": 0,
+    "characters": [
+      {
+        "action": "",
+        "ammo": [
+          12,
+          30,
+          8
+        ],
+        "grounded": true,
+        "health": 100.0,
+        "index": 9,
+        "owned": [
+          true,
+          true,
+          true
+        ],
+        "pitch": 0.0,
+        "position": [
+          -82.07499694824219,
+          1.2224220037460327,
+          -187.10714721679688
+        ],
+        "shield": 0.0,
+        "weapon": 0,
+        "yaw": 0.5235987901687622
+      },
+      {
+        "action": "",
+        "ammo": [
+          12,
+          30,
+          8
+        ],
+        "grounded": true,
+        "health": 0.0,
+        "index": 6,
+        "owned": [
+          false,
+          false,
+          true
+        ],
+        "pitch": 0.0,
+        "position": [
+          10.0,
+          -1000.0,
+          0.0
+        ],
+        "shield": 0.0,
+        "weapon": 2,
+        "yaw": -1.334863543510437
+      },
+      {
+        "action": "",
+        "ammo": [
+          12,
+          30,
+          8
+        ],
+        "grounded": true,
+        "health": 0.0,
+        "index": 7,
+        "owned": [
+          false,
+          false,
+          true
+        ],
+        "pitch": 0.0,
+        "position": [
+          20.0,
+          -1000.0,
+          0.0
+        ],
+        "shield": 0.0,
+        "weapon": 2,
+        "yaw": 2.3849194049835205
+      }
+    ],
+    "cover": {
+      "active": false,
+      "age": 0.0,
+      "cooldown": 20.0,
+      "durability": 300.0,
+      "generation": 0,
+      "height": 0.0,
+      "index": 163,
+      "remaining": 0.0,
+      "selected": false,
+      "temporary": false,
+      "token": 0,
+      "used": false
+    },
+    "events": {
+      "CoverExpired": 1,
+      "CoverPlaced": 4,
+      "CoverReplaced": 3,
+      "CoverRequests": 5,
+      "CoverTemporaryPlaced": 1,
+      "EnemyShieldEquipped": 1,
+      "Land": 1
+    },
+    "navPolygons": 8375,
+    "pickups": 2,
+    "recoveryRequested": false,
+    "seconds": 11.991666552610695,
+    "seed": 1729,
+    "step": 317
+  },
+  "first": {
+    "born": 0.008333333767950535,
+    "position": [
+      -82.07499694824219,
+      1.2274237871170044,
+      -184.10714721679688
+    ],
+    "token": 37258
+  },
+  "lifetime_s": 10.0,
+  "passed": true,
+  "replacement": {
+    "born": 1.9916665526106954,
+    "position": [
+      -80.57499694824219,
+      1.2274249792099,
+      -184.50906372070313
+    ],
+    "token": 37261
+  }
+}
